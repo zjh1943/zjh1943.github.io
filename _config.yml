@@ -4,7 +4,7 @@
 
 # Site
 title: Book Book, Come in~
-subtitle: 
+subtitle: 知明所以的博客
 description: 知明所以的博客
 author: 知明所以
 language: zh-CN
@@ -34,7 +34,7 @@ titlecase: false # Transform title into titlecase
 external_link: true # Open external links in new tab
 filename_case: 0
 render_drafts: false
-post_asset_folder: false
+post_asset_folder: true
 relative_link: false
 future: true
 highlight:
@@ -80,3 +80,5 @@ deploy:
   type: git
   repo: git@github.com:zjh1943/zjh1943.github.io.git
   branch: master
+
+favicon: favicon.ico

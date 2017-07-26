@@ -1,2 +1,5 @@
 node_modules
 themes/**
+public/**
+.DS_Store
+.deploy_git/**
