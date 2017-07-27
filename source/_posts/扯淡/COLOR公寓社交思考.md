@@ -1,4 +1,5 @@
 ---
+title: COLOR公寓社交思考
 tags: 
 - color 
 - 社区 
