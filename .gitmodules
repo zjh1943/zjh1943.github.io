@@ -3,4 +3,4 @@
 	url = git@github.com:zjh1943/maupassant-hexo.git
 [submodule "themes/next"]
 	path = themes/next
-	url = git@github.com:zjh1943/hexo-theme-next
+	url = git@github.com:zjh1943/hexo-theme-next.git
