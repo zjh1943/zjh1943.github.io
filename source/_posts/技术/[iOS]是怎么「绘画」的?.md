@@ -1,5 +1,5 @@
 ---
-title: "[iOS]是怎么"绘画"的?"
+title: "[iOS]是怎么「绘画」的?"
 date: 2013-12-31
 tags: 
 - ios
@@ -22,7 +22,7 @@ categories:
 绘图引擎, 通俗来说就好比给你一张纸一支笔和若干颜色的颜料, 你可以用它来做**最基本**的图形绘制.   
 一个**最基本的绘图引擎**包括一下接口:  
 
-```
+```objc
 //Code-1
 I1. drawLine()		//绘制任意线条,并支持对线条上色.
 I2. drawPath()		//根据路径绘制形状,并支持填充颜色.
@@ -46,7 +46,7 @@ I6. drawText()		//绘制文字
 ## 在哪里绘制?
 如果我们在XCode里新建一个`UIView`类, 我们会得到以下代码:
 
-```
+```objc
 //Code-2
 # import "GraphicsViewControllerView.h"
 @implementation GraphicsViewControllerView
@@ -63,6 +63,7 @@ I6. drawText()		//绘制文字
 }
 @end
 ```
+
 通常,`drawRect()`都会被注释起来. 因为, 如果你向`UIView`添加`subView`或者设置`UIView`的显示相关的属性(e.g. `backgroundCrolor`)的时候, `UIKit`会自动的把这些参数代表的含义绘制到`CALayer`上去. 也就是说, 一般情况我们并不需要自己来绘制, `UIKit`会自动帮我们完成绘制工作.   
 但是, 当不添加`subView`, 不设置`UIView`的显示相关的属性时, 我们就可以通过重载`drawRect()`来手动绘制图像了.   
 
@@ -74,7 +75,7 @@ I6. drawText()		//绘制文字
 我们新建一个`UIView`类`CustomUIView`,如下重载`drawRect()`方法.  
 新建`CustomUIView`的对象,不设置任何属性,添加到显示列表. 
 
-```
+```objc
 //Code-3
 - (void)drawRect:(CGRect)rect{ 
 	UIFont *font = [UIFont systemFontWithSize:40.f]; 
@@ -82,6 +83,7 @@ I6. drawText()		//绘制文字
 	[myString drawAtPoint:CGPointMake(40, 180) withFont:font];
 }
 ```
+
 运行, 就可以看到我们没有添加任何`UITextField`却显示了文字~  
 
 #### more:
@@ -90,7 +92,7 @@ I6. drawText()		//绘制文字
 ## setColor
 我们把`Code-3`中的代码添加两行, 变成:  
 
-```
+```objc code-4
 //Code-4
 - (void)drawRect:(CGRect)rect{ 
 	UIColor* color = [UIColor blueColor];		//create color
@@ -99,8 +101,8 @@ I6. drawText()		//绘制文字
 	NSString *myString = @"Some String";
 	[myString drawAtPoint:CGPointMake(40, 180) withFont:font];
 }
-
 ```
+
 就可以看到,文字由黑色变成了蓝色.  
 #### more:
 `UIColor`还有两个方法`setStroke`和`setFill`分别设置线条颜色和填充颜色. 在后面的章节会用到.`set`方法影响所有前景色.
@@ -108,7 +110,7 @@ I6. drawText()		//绘制文字
 ## drawImage
 同样的, 如下重写`drawRect`方法:
 
-```
+```objc
 //Code-5
 - (void)drawRect:(CGRect)rect{ 
 	/* Assuming the image is in your app bundle and we can load it */
@@ -116,17 +118,19 @@ I6. drawText()		//绘制文字
 	[xcodeIcon drawAtPoint:CGPointMake(0.0f, 20.0f)];
 }
 ```
+
 我们看到图像被绘制出来了.
 
 #### more:
 `UIImage`还有其他绘制方法:
 
-```
+```objc
 drawInRect:
 drawAsPatternInRect:
 drawAtPoint:blendMode:alpha:
 drawInRect:blendMode:alpha:
 ```
+
 方法名已经很清楚的说明了方法的用途. 具体可参考官方文档
 
 ## drawLine

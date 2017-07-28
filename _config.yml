@@ -7,7 +7,7 @@ title: Book Book, Come in~
 subtitle: 知明所以的博客
 description: 知明所以的博客
 author: 知明所以
-language: zh-CN
+language: en
 timezone: Asia/Shanghai
 
 # URL
@@ -84,3 +84,9 @@ deploy:
   branch: master
 
 favicon: favicon.ico
+
+algolia:
+  applicationID: 'JP4JSDSR1E'
+  apiKey: '25431a2c3af9a04b75e4874804352b71' 
+  indexName: 'blog.bookbook.in'
+  chunkSize: 5000

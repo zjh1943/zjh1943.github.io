@@ -1,5 +1,5 @@
 ---
-date:2014-03-29
+date: 2014-03-29
 title: "[cocos2dx]让CCScrollView支持分页"
 tags: 
 - cocos2dx
