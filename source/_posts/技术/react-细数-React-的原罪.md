@@ -38,6 +38,3 @@ categories:
     ```
     你没办法定义一个 `clone` 方法，限制它的第一个参数必须是满足某个 `PropType` 定义的组件对象；甚至，你也没办法定义一个接口 `AnotherPropType`，使得它的某个属性满足 `SomePropType`。
 2. **Controller 和 View 融为一谈**。React 本身是一个 View 层的工具，他最擅长的是把数据 `render()` 成 dom 元素。在 Android SDK 里，有一个东西跟它的功能很相似： layout xml。但是在 React 的设计理念里，没有对 view 和 controller 的明确的概念的区分。我们可以在 Component 里做 view 层该做的事情（根据给定数据显示界面），也可以做 controller 应该做的事情（处理交互动作、处理网络请求）。以至于有很多博客来“教” React 的开发者来明确分这两个概念，参考博客[Presentational and Container Components](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0)。当然你可以说，这是开发者自身素质和抽象能力的体现，但是作为一个使用量如此巨大的框架，官方居然没有为用户构造和区分这个概念，还要用户自己去**发现和总结**，不得不说，是一大黑点。
-
-
-[img_render_return_object]: react_render_result_object.png "render() 函数返回的结果"
