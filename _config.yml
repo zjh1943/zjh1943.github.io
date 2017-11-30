@@ -71,6 +71,10 @@ pagination_dir: page
 
 # Extensions
 ## Plugins: https://hexo.io/plugins/
+plugins:
+  hexo-qiniu-sync
+#  - hexo-tag-plantuml
+
 ## Themes: https://hexo.io/themes/
 # theme: maupassant
 # theme: landscape
@@ -90,3 +94,22 @@ algolia:
   apiKey: '25431a2c3af9a04b75e4874804352b71' 
   indexName: 'blog.bookbook.in'
   chunkSize: 5000
+
+
+qiniu:
+  offline: false
+  sync: true
+  bucket:  hexo-blog
+  secret_file: /Users/zjh/qn.json
+  dirPrefix: static
+  urlPrefix: http://ov4e10wfe.bkt.clouddn.com/static
+  up_host: http://upload.qiniu.com
+  local_dir: static
+  update_exist: true
+  image: 
+    folder: images
+    extend: 
+  js:
+    folder: js
+  css:
+    folder: css

@@ -11,14 +11,24 @@ categories:
 ---
 
 
-**React 框架的终极目的是：高效的用 js 生成HTML**。为了实现这个目的，react 维护了一个 virtual DOM ，然后再根据 virtual DOM 生成真正的 DOM，来达到「高效」的目的。说到高效，其实就是回答这两个问题：
+**React 框架的终极目的是：高效的用 js 生成HTML**。
+
+为了实现这个目的，react 维护了一个 virtual DOM ，然后再根据 virtual DOM 生成真正的 DOM，来达到「高效」的目的。说到高效，其实就是回答这两个问题：
 
 1. When do I re-render? Answer: When I observe that the data is dirty.
 2. How do I re-render efficiently? Answer: Using a virtual DOM to generate a real DOM patch.
 
-[摸我了解更多关于 virtual DOM ][virtual_dom_stack_overflow]
+客户端常见的判断 re-render 时机的方法有下面两种：
+1. diff。这种方法是：每个渲染周期（俗称每一帧），都会进行 render，然后 render 出来的结构，跟上一次 render 的结果进行 diff；找出不同的部分，再对 DOM 中对应的部分进行更新。
+2. 数据变动检测。检测会导致界面变动的数据源，当数据有变化时，进行 re-render。
 
-下面，我们讲： React 为了实现如上的构想，为我们提供了哪些东西。
+两种方式都有自己的优势和劣势，更多的时候，视图框架会把两者结合起来用。
+react 主要用的第二种方法，因为它效率更高。因为本质上讲，方法一是 diff virtual DOM，方法二是 diff props and state。一般情况下，props & state 的数据量会小一些。当然，你也可以写一个 Component，props 结构非常复杂，但是只用了其中一个字段用来渲染，渲染的节点数也很少。这种设计属于不好的设计，应该尽量避免。**好的 Component 应该是 props 尽量扁平和简洁，去掉根渲染无关的字段。** 这样才能充分发挥 react 的渲染性能。
+
+[更多关于 virtual DOM ][virtual_dom_stack_overflow]
+
+
+React 为了实现如上的构想，为我们提供了很多概念和代码，下面逐一讲解：
 
 ### jsx 标记语言
 
@@ -51,7 +61,7 @@ React 提供了一个类 Component 作为所有组件的基类。它的意义是
 3. 提供了 props 接口，为父容器和子容器之间信息交流提供标准通道。
 4. 提供 state，作为容器内部状态管理的落脚地。
 
-### 视组组件的描述
+### 可视组组件的描述
 
 每个组件都有一个 render 方法。
 
