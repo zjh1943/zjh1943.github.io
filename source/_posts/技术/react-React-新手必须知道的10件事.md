@@ -12,8 +12,8 @@ categories:
 - 技术
 ---
 
-1. 尽量用 props & onChange，不要用 ref 获取引用然后调用方法。[了解更多][first_class_people_props]
-2. React 只是一个视图框架，请尽量在 Component 里只做他擅长的事情。尽量写无状态的 Component。视图以外的事情，比如控制层、数据层、网络层，需要借助其他框架来完成。[了解更多][react_just_view]
+1. 尽量用 props & onChange，不要用 ref 获取引用然后调用方法。详情参考博客：[一等公民 props & onChange][first_class_people_props]
+2. React 只是一个视图框架，请尽量在 Component 里只做他擅长的事情。尽量写无状态的 Component。视图以外的事情，比如控制层、数据层、网络层，需要借助其他框架来完成。详情参考博客：[React 仅仅是一个 view 框架][react_just_view]
 4. 避免重复造轮子。react 有丰富的第三方 Component & Utils & everything。写任何组件前请先看看这里：[awesome-react-components](https://github.com/brillout/awesome-react-components)
 5. Less state，more PureComponent. 深刻理解和区分 Presentational Component 和 Container Component。前者决定组件如何显示，更关心对已知数据的展示，大量操作 dom，很少有 state；后者更关心数据的获取和更新，关心交互操作，很少直接操作 dom，可能包括很多 state。详解请参考：[Presentational and Container Components](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0)
 6. 理解 React 的单向数据流，了解他的优势和局限。详情：[React 组件数据流 && 组件间沟通](https://segmentfault.com/a/1190000006831820)
