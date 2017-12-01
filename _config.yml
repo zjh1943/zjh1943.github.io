@@ -113,3 +113,11 @@ qiniu:
     folder: js
   css:
     folder: css
+
+
+# hexo-generator-searchdb
+search:
+  path: search.xml
+  field: post
+  format: html
+  limit: 10000
