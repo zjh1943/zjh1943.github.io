@@ -133,16 +133,13 @@ __参与任务__：
 
 # 我的技能栈
 
-<a href="https://www.processon.com/view/link/569e3167e4b0f1e8b16d659c">
-<img src="http://blog.bookbook.in/%E6%89%AF%E6%B7%A1/%E6%88%91%E7%9A%84%E6%8A%80%E8%83%BD%E6%A0%91.png" alt="我的技能树">
-</a> 
+{% qnimg my_dev_stack.png title:"我的技能树" alt:"render() 我的技能树" %}
 
 | 技能等级 | 技能 | 技能说明 |
 |----------|------|----------|
 | 精通     | `AS3, cocos2d-x, Android, iOS, PHP+Yii2`| 主导过大型完整项目。对于开源平台，精读源码、理解原理、并能进行功能更改和性能优化；对于非开源平台，理解平台构架、设计理念，能完美实现常见功能、针对平台进行性能优化、规避平台自有bug。 |
 |    熟练使用 |`RDB, MySQL, HTML+CSS3+JS` | 开发过完整项目，了解基本原理，熟悉常见API       | 
 |    简单使用      |  `openCV, 图像识别, APS.NET, Hibernate, Mina` | 开发过小型项目或个人项目，使用其部分功能，其他功能需要查阅文档。    | 
-
 
 
 # 自我评价

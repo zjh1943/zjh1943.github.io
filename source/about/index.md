@@ -6,10 +6,7 @@ date: 2017-07-27 00:30:18
 
 # 我的技能栈，欢迎交流
 
-
-<a href="https://www.processon.com/view/link/569e3167e4b0f1e8b16d659c">
-<img src="http://blog.bookbook.in/%E6%89%AF%E6%B7%A1/%E6%88%91%E7%9A%84%E6%8A%80%E8%83%BD%E6%A0%91.png" alt="我的技能树">
-</a> 
+{% qnimg my_dev_stack.png title:"我的技能树" alt:"render() 我的技能树" %}
 
 | 技能等级 | 技能 | 技能说明 |
 |----------|------|----------|
