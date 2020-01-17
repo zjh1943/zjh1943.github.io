@@ -6,7 +6,7 @@ date: 2017-07-27 00:30:18
 
 # 我的技能栈，欢迎交流
 
-{% qnimg my_dev_stack.png title:"我的技能树" alt:"render() 我的技能树" %}
+![我的技能树](/images/idx/my_dev_stack.png)
 
 | 技能等级 | 技能 | 技能说明 |
 |----------|------|----------|

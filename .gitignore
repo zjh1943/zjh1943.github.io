@@ -3,4 +3,5 @@ public/**
 **/.DS_Store
 .deploy_git/**
 .vscode/**
+.MWebMetaData
 db.json

@@ -133,7 +133,7 @@ __参与任务__：
 
 # 我的技能栈
 
-{% qnimg my_dev_stack.png title:"我的技能树" alt:"render() 我的技能树" %}
+![我的技能树](/images/idx/my_dev_stack.png
 
 | 技能等级 | 技能 | 技能说明 |
 |----------|------|----------|

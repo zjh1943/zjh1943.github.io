@@ -71,9 +71,8 @@ pagination_dir: page
 
 # Extensions
 ## Plugins: https://hexo.io/plugins/
-plugins:
-  hexo-qiniu-sync
-#  - hexo-tag-plantuml
+# plugins:
+  # - hexo-qiniu-sync
 
 ## Themes: https://hexo.io/themes/
 # theme: maupassant
@@ -89,11 +88,11 @@ deploy:
 
 favicon: favicon.ico
 
-algolia:
-  applicationID: 'JP4JSDSR1E'
-  apiKey: '25431a2c3af9a04b75e4874804352b71' 
-  indexName: 'blog.bookbook.in'
-  chunkSize: 5000
+# algolia:
+#   applicationID: 'JP4JSDSR1E'
+#   apiKey: '25431a2c3af9a04b75e4874804352b71' 
+#   indexName: 'blog.bookbook.in'
+#   chunkSize: 5000
 
 
 qiniu:
@@ -116,8 +115,8 @@ qiniu:
 
 
 # hexo-generator-searchdb
-search:
-  path: search.xml
-  field: post
-  format: html
-  limit: 10000
+# search:
+#   path: search.xml
+#   field: post
+#   format: html
+#   limit: 10000
