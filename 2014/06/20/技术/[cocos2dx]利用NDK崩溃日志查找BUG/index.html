@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要: 在android上开发c++应用, crash日志都是汇编码, 很难对应到c++代码中去. 通过此文, 你可以定位到程序崩溃时的C++代码, 精确查找问题. 背景介绍 本文主要内容: 利用android的crash log来对c++开发的android应用进行错误定位.    容易稳定复现的BUG, 一般可以通过断点调试来解决. 如果测试人员也无法稳定复现, log就成了程序吊定位问题的救">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[cocos2dx]利用NDK崩溃日志查找BUG">
+<meta property="og:url" content="http://blog.bookbook.in/2014/06/20/%E6%8A%80%E6%9C%AF/[cocos2dx]%E5%88%A9%E7%94%A8NDK%E5%B4%A9%E6%BA%83%E6%97%A5%E5%BF%97%E6%9F%A5%E6%89%BEBUG/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要: 在android上开发c++应用, crash日志都是汇编码, 很难对应到c++代码中去. 通过此文, 你可以定位到程序崩溃时的C++代码, 精确查找问题. 背景介绍 本文主要内容: 利用android的crash log来对c++开发的android应用进行错误定位.    容易稳定复现的BUG, 一般可以通过断点调试来解决. 如果测试人员也无法稳定复现, log就成了程序吊定位问题的救">
+<meta property="article:published_time" content="2014-06-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="cocos2dx">
+<meta property="article:tag" content="ndk">
+<meta property="article:tag" content="c++">
+<meta property="article:tag" content="logcat">
+<meta property="article:tag" content="ndk-stack">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bookbook.in/2014/06/20/%E6%8A%80%E6%9C%AF/[cocos2dx]%E5%88%A9%E7%94%A8NDK%E5%B4%A9%E6%BA%83%E6%97%A5%E5%BF%97%E6%9F%A5%E6%89%BEBUG/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[cocos2dx]利用NDK崩溃日志查找BUG | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2014/06/20/%E6%8A%80%E6%9C%AF/[cocos2dx]%E5%88%A9%E7%94%A8NDK%E5%B4%A9%E6%BA%83%E6%97%A5%E5%BF%97%E6%9F%A5%E6%89%BEBUG/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [cocos2dx]利用NDK崩溃日志查找BUG
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2014-06-20 00:00:00" itemprop="dateCreated datePublished" datetime="2014-06-20T00:00:00+08:00">2014-06-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要: 在android上开发c++应用, crash日志都是汇编码, 很难对应到c++代码中去. 通过此文, 你可以定位到程序崩溃时的C++代码, 精确查找问题.</p>
+<h3 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h3><ol>
+<li><p>本文主要内容: 利用android的crash log来对c++开发的android应用进行错误定位.  </p>
+</li>
+<li><p>容易稳定复现的BUG, 一般可以通过断点调试来解决. 如果测试人员也无法稳定复现, <strong>log就成了程序吊定位问题的救命稻草</strong>. </p>
+</li>
+<li><p>通用操作系统都有自己的日志系统, android也不例外. 救命稻草已经给你了~ ( <a href="#how_to_refer_android_log">怎样查看android的系统日志</a> )  </p>
+</li>
+<li><p>但是, android的系统日志在c++代码崩溃时, 打印的都是内存地址和寄存器. 比如, 这样:</p>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">06-20 15:54:35.331 23889 23889 I DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***</span><br><span class="line">06-20 15:54:35.331 23889 23889 I DEBUG   : Build fingerprint: &#39;google&#x2F;razorg&#x2F;deb:4.4.2&#x2F;KOT49H&#x2F;937116:user&#x2F;release-keys&#39;</span><br><span class="line">06-20 15:54:35.331 23889 23889 I DEBUG   : Revision: &#39;0&#39;</span><br><span class="line">06-20 15:54:35.331 23889 23889 I DEBUG   : pid: 1981, tid: 2020, name: Thread-3399  &gt;&gt;&gt; com.guangyou.ddgame &lt;&lt;&lt;</span><br><span class="line">06-20 15:54:35.331 23889 23889 I DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 00000028</span><br><span class="line">06-20 15:54:35.431   187   710 D audio_hw_primary: out_set_parameters: enter: usecase(0: deep-buffer-playback) kvpairs: routing&#x3D;2</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     r0 76d94458  r1 00000000  r2 00000000  r3 00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     r4 760c1a48  r5 751e2440  r6 00000001  r7 760c1a48</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     r8 00000001  r9 76c96f3c  sl 76c861c0  fp 76d94444</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     ip 00000001  sp 76d94430  lr 75a81bd8  pc 75a81bdc  cpsr 600f0010</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d0  746968775f327865  d1  6a6e6169642f675f</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d2  5f6f616978757169  d3  676e702e6e776f6d</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d4  0000000009000000  d5  0000000000000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d6  0000000000000000  d7  0000000000000000</span><br></pre></td></tr></table></figure>
+
+
+<p>这密密麻麻的都是些神马, 是人看的么?</p>
+<p>饿. 这个麻… 谁让你当程序猿! 让你当! 活该要看天书! </p>
+<p>硬着头皮也要来, 我们就来讲讲怎么消化天书吧~</p>
+<h3 id="怎样获取android的系统日志"><a href="#怎样获取android的系统日志" class="headerlink" title="怎样获取android的系统日志"></a>怎样获取android的系统日志<a id="how_to_refer_android_log"></a></h3><p> 假设你已经安装了 Android Develop Tools, 可以成功调用<code>adb</code>. 并打开android开发用机的调试模式, 连接到电脑.</p>
+<p> 打开命令行, 在命令行输入: <code>adb logcat</code>. 就可以看到满屏幕的日志啦.<br> 输入<code>adb logcat --help</code>可以看到 <code>logcat</code>的用法提示.  </p>
+<p> 这里有两个参数特别提醒一下, 比较常用:<br>    1. <code>-v XXXX</code>: 用来选择log输出样式, 一般建议 <code>threadtime</code>, 更加详细.<br>    2. <code>-d</code>: 让log一次性输出后马上完毕. 如果没有此命令, <code>logcat</code> 工具会一直输出, 即使更新在界面上. </p>
+<p>如果需要保存log到文件, 方便以后查看. 可输入命令:<br><code>adb logcat -v threadtime -d &gt; log.txt</code></p>
+<h3 id="理解NDK的crash-log"><a href="#理解NDK的crash-log" class="headerlink" title="理解NDK的crash log"></a>理解NDK的crash log</h3><p>如果你用c++开发的android应用在运行过程中, c++代码发生错误导致程序崩溃, 系统就会记录 crash log到上述的系统日志中. </p>
+<p>下面是我正在开发的游戏一次崩溃后, 截取的日志( 插个广告, 全名斗地主下载地址: <a href="http://sj.ddwan.com" target="_blank" rel="noopener">http://sj.ddwan.com</a> )</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line">06-20 15:54:35.331 23889 23889 I DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***</span><br><span class="line">06-20 15:54:35.331 23889 23889 I DEBUG   : Build fingerprint: &#39;google&#x2F;razorg&#x2F;deb:4.4.2&#x2F;KOT49H&#x2F;937116:user&#x2F;release-keys&#39;</span><br><span class="line">06-20 15:54:35.331 23889 23889 I DEBUG   : Revision: &#39;0&#39;</span><br><span class="line">06-20 15:54:35.331 23889 23889 I DEBUG   : pid: 1981, tid: 2020, name: Thread-3399  &gt;&gt;&gt; com.guangyou.ddgame &lt;&lt;&lt;</span><br><span class="line">06-20 15:54:35.331 23889 23889 I DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 00000028</span><br><span class="line">06-20 15:54:35.431   187   710 D audio_hw_primary: out_set_parameters: enter: usecase(0: deep-buffer-playback) kvpairs: routing&#x3D;2</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     r0 76d94458  r1 00000000  r2 00000000  r3 00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     r4 760c1a48  r5 751e2440  r6 00000001  r7 760c1a48</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     r8 00000001  r9 76c96f3c  sl 76c861c0  fp 76d94444</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     ip 00000001  sp 76d94430  lr 75a81bd8  pc 75a81bdc  cpsr 600f0010</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d0  746968775f327865  d1  6a6e6169642f675f</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d2  5f6f616978757169  d3  676e702e6e776f6d</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d4  0000000009000000  d5  0000000000000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d6  0000000000000000  d7  0000000000000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d8  0000000000000000  d9  0000000000000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d10 0000000000000000  d11 0000000000000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d12 0000000000000000  d13 0000000000000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d14 0000000000000000  d15 0000000000000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d16 c3c3c3c3c3c3c3c3  d17 c3c3c3c3c3c3c3c3</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d18 41c7ddc227000000  d19 3ff0000000000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d20 3f811110896efbb2  d21 3fd7096611460fdb</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d22 c0176a8ee0000000  d23 bfc5230c760b0605</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d24 0000000000000000  d25 3fc7922925a107e2</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d26 3fdaa0f8fab43e33  d27 3fb43ad076b251ab</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d28 3fa15cb6bdc3c156  d29 3ec6cd878c3b46a7</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     d30 3f65f3b6b9b97e01  d31 3ef99342e0ee5069</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     scr 20000012</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   : backtrace:</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     #00  pc 0089cbdc  &#x2F;data&#x2F;app-lib&#x2F;com.guangyou.ddgame-1&#x2F;libcocos2dcpp.so (cocos2d::Texture2D::getContentSize() const+32)</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     #01  pc 0088f8dc  &#x2F;data&#x2F;app-lib&#x2F;com.guangyou.ddgame-1&#x2F;libcocos2dcpp.so (cocos2d::Sprite::setTexture(std::string const&amp;)+128)</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     #02  pc 007863dc  &#x2F;data&#x2F;app-lib&#x2F;com.guangyou.ddgame-1&#x2F;libcocos2dcpp.so (cocos2d::ui::Button::loadTextureDisabled(std::string const&amp;, cocos2d::ui::Widget::TextureResType)+336)</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   : stack:</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d943f0  00000001</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d943f4  4006bc0d  &#x2F;system&#x2F;lib&#x2F;libc.so (free+12)</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d943f8  76a72c54</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d943fc  75eca614  &#x2F;data&#x2F;app-lib&#x2F;com.guangyou.ddgame-1&#x2F;libcocos2dcpp.so</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94400  751c23c8  [anon:libc_malloc]</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94404  751c23c8  [anon:libc_malloc]</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94408  751c23c8  [anon:libc_malloc]</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d9440c  75a749b4  &#x2F;data&#x2F;app-lib&#x2F;com.guangyou.ddgame-1&#x2F;libcocos2dcpp.so (cocos2d::Sprite::setTexture(cocos2d::Texture2D*)+128)</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94410  0000003d</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94414  00e8efc8</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94418  00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d9441c  00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94420  00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94424  76d94458  [stack:2020]</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94428  00000020</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d9442c  76d94444  [stack:2020]</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     #00  76d94430  00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94434  76d94458  [stack:2020]</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94438  76a66184</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d9443c  760c1a48  &#x2F;data&#x2F;app-lib&#x2F;com.guangyou.ddgame-1&#x2F;libcocos2dcpp.so</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94440  76d9447c  [stack:2020]</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94444  75a748e0  &#x2F;data&#x2F;app-lib&#x2F;com.guangyou.ddgame-1&#x2F;libcocos2dcpp.so (cocos2d::Sprite::setTexture(std::string const&amp;)+132)</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :     #01  76d94448  76d944ec  [stack:2020]</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d9444c  793ff0e8  [anon:libc_malloc]</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94450  76a72c54</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94454  00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94458  00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d9445c  00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94460  00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94464  00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d94468  00000000</span><br><span class="line">06-20 15:54:35.511 23889 23889 I DEBUG   :          76d9446c  00000000</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d94470  7b91dcf8  [anon:libc_malloc]</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d94474  78ce6c50  [anon:libc_malloc]</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d94478  76d944b4  [stack:2020]</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d9447c  7596b3e0  &#x2F;data&#x2F;app-lib&#x2F;com.guangyou.ddgame-1&#x2F;libcocos2dcpp.so (cocos2d::ui::Button::loadTextureDisabled(std::string const&amp;, cocos2d::ui::Widget::TextureResType)+340)</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :     #02  76d94480  00000001</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d94484  00000000</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d94488  76d944ec  [stack:2020]</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d9448c  793fe780  [anon:libc_malloc]</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d94490  76d944f0  [stack:2020]</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d94494  793ff0e8  [anon:libc_malloc]</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d94498  00000001</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d9449c  4006bc0d  &#x2F;system&#x2F;lib&#x2F;libc.so (free+12)</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d944a0  76a72c54</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d944a4  75eca614  &#x2F;data&#x2F;app-lib&#x2F;com.guangyou.ddgame-1&#x2F;libcocos2dcpp.so</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d944a8  78ce6c50  [anon:libc_malloc]</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d944ac  78ce6c50  [anon:libc_malloc]</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d944b0  76d9455c  [stack:2020]</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d944b4  75924e54  &#x2F;data&#x2F;app-lib&#x2F;com.guangyou.ddgame-1&#x2F;libcocos2dcpp.so (cocostudio::ButtonReader::setPropsFromJsonDictionary(cocos2d::ui::Widget*, rapidjson::GenericValue&lt;rapidjson::UTF8&lt;char&gt;, rapidjson::MemoryPoolAllocator&lt;rapidjson::CrtAllocator&gt; &gt; const&amp;)+752)</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d944b8  00000000</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :          76d944bc  78ce6c50  [anon:libc_malloc]</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   : memory near r0:</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :     76d94438 76a66184 760c1a48 76d9447c 75a748e0</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :     76d94448 76d944ec 793ff0e8 76a72c54 00000000</span><br><span class="line">...</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   : memory near r4:</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :     760c1a28 760811c8 75ee318c 75ee3194 75ee319c</span><br><span class="line">06-20 15:54:35.521 23889 23889 I DEBUG   :     760c1a38 4006d091 75f9a1f4 75f4ee5c 75e8ea0c</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>下面来逐行解读:</p>
+<ol>
+<li>ndk crash log以<code>*** *** *** *** ***</code>开始.</li>
+<li>第一行<code>Build fingerprint: &#39;google/razorg/deb:4.4.2/KOT49H/937116:user/release-keys&#39;</code> 指明了运行的Android版本, 如果您有多份crash dump的话这个信息就比较有用了.</li>
+<li>接着一行显示的是当前的线程id(pid)和进程id(tid). 如果当前崩溃的线程是主线程的话, pid和tid会是一样的~</li>
+<li>第四行, 显示的是unix信号. 这里的<code>signal 11</code>, 即<code>SIGSEGV</code>, 表示段错误, 是最常见的信号.(<a href="http://zh.wikipedia.org/wiki/%E4%BF%A1%E5%8F%B7_(%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A7%91%E5%AD%A6)" target="_blank" rel="noopener">什么是unix信号</a>, <a href="http://zh.wikipedia.org/wiki/SIGSEGV" target="_blank" rel="noopener">什么是<code>SIGSEGV</code></a>)</li>
+<li>接下来的部分是系统寄存器的dump信息.  <table>
+<thead>
+<tr>
+<th align="left">符号</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">rX(X=[0~9])</td>
+<td>代表整数寄存器</td>
+</tr>
+<tr>
+<td align="left">dX(X=[0~31])</td>
+<td>是浮点指针寄存器</td>
+</tr>
+<tr>
+<td align="left">fp (or r11)</td>
+<td>指向当前正在执行的函数的堆栈底.</td>
+</tr>
+<tr>
+<td align="left">ip (or r12)</td>
+<td>一个寄存器, 我也没弄明白是干啥的.</td>
+</tr>
+<tr>
+<td align="left">sp (or r13)</td>
+<td>当前正在执行的函数的堆栈顶.(跟fp相对应)</td>
+</tr>
+<tr>
+<td align="left">lr (or r14)</td>
+<td><a href="http://en.wikipedia.org/wiki/Link_register" target="_blank" rel="noopener">link register</a>. 简单来说, 当当前指令执行完了, <br/>就会从这个寄存器获取地址, 来知道需要返回<br/>到哪里继续执行.</td>
+</tr>
+<tr>
+<td align="left">pc (or r15)</td>
+<td>program counter. 存放下一条指令的地址</td>
+</tr>
+<tr>
+<td align="left">cpsr</td>
+<td>Current Program Status Register. 表示当前<br/>运行环境和状态的一些字节位.</td>
+</tr>
+</tbody></table>
+</li>
+<li>Crash dump还包含PC之前和之后的一些内存字段.</li>
+<li>最后, 是崩溃时的调用堆栈. 如果你执行的是debug版本, 还能还原一些c++代码.</li>
+</ol>
+<h3 id="利用ndk-stack定位崩溃代码"><a href="#利用ndk-stack定位崩溃代码" class="headerlink" title="利用ndk-stack定位崩溃代码"></a>利用ndk-stack定位崩溃代码</h3><p>上面的一些信息能简单的帮你定位以下问题. 如果信息量还不够大的话, 那就还有最后一招: 还原历史.</p>
+<p><code>Android NDK</code>自从版本R6开始, 提供了一个工具<code>ndk-stack</code>( 在目录<code>{ndk_root}/</code>中 ). 这个工具能自动分析dump下来的crash log, 将崩溃时的调用内存地址和c++代码一行一行对应起来.</p>
+<p>我们先看一下用法, 执行命令<code>ndk-stack --help</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Usage:</span><br><span class="line">   ndk-stack -sym &lt;path&gt; [-dump &lt;path&gt;]</span><br><span class="line"></span><br><span class="line">      -sym  Contains full path to the root directory for symbols.</span><br><span class="line">      -dump Contains full path to the file containing the crash dump.</span><br><span class="line">            This is an optional parameter. If ommited, ndk-stack will</span><br><span class="line">            read input data from stdin</span><br></pre></td></tr></table></figure>
+<ul>
+<li>-dump参数很容易理解, 即dump下来的log文本文件. <code>ndk-stack</code>会分析此文件.</li>
+<li>-sym参数就是你android项目下,编译成功之后,<code>obj</code>目录下的文件.</li>
+</ul>
+<p>下面我们就来示范一下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ adb logcat | ndk-stack -sym .&#x2F;obj&#x2F;local&#x2F;armeabi</span><br><span class="line">********** Crash dump: **********</span><br><span class="line">Build fingerprint: &#39;htc_wwe&#x2F;htc_bravo&#x2F;bravo:2.3.3&#x2F;</span><br><span class="line">GRI40&#x2F;96875.1:user&#x2F;release-keys&#39;</span><br><span class="line">pid: 1723, tid: 1743  &gt;&gt;&gt; com.packtpub.droidblaster &lt;&lt;&lt;</span><br><span class="line">signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0000000c</span><br><span class="line">Stack frame #00  pc 00010a2c  &#x2F;data&#x2F;data&#x2F;com.packtpub.droidblaster&#x2F;lib&#x2F;libdroidblaster.so: Routine update in &#x2F;home&#x2F;packt&#x2F;Project&#x2F;Chapter11&#x2F;DroidBlaster_Part11&#x2F;jni&#x2F;TimeService.cpp:25</span><br><span class="line">Stack frame #01  pc 00009fcc  &#x2F;data&#x2F;data&#x2F;com.packtpub.droidblaster&#x2F;lib&#x2F;libdroidblaster.so: Routine onStep in &#x2F;home&#x2F;packt&#x2F;Project&#x2F;Chapter11&#x2F;DroidBlaster_Part11&#x2F;jni&#x2F;DroidBlaster.cpp:53</span><br><span class="line">Stack frame #02  pc 0000a348  &#x2F;data&#x2F;data&#x2F;com.packtpub.droidblaster&#x2F;lib&#x2F;libdroidblaster.so: Routine run in &#x2F;home&#x2F;packt&#x2F;Project&#x2F;Chapter11&#x2F;DroidBlaster_Part11&#x2F;jni&#x2F;EventLoop.cpp:49</span><br><span class="line">Stack frame #03  pc 0000f994  &#x2F;data&#x2F;data&#x2F;com.packtpub.droidblaster&#x2F;lib&#x2F;libdroidblaster.so: Routine android_main in &#x2F;home&#x2F;packt&#x2F;Project&#x2F;Chapter11&#x2F;DroidBlaster_Part11&#x2F;jni&#x2F;Main.cpp:31</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>熟悉的代码出现啦~~</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cocos2dx/" rel="tag"># cocos2dx</a>
+              <a href="/tags/ndk/" rel="tag"># ndk</a>
+              <a href="/tags/c/" rel="tag"># c++</a>
+              <a href="/tags/logcat/" rel="tag"># logcat</a>
+              <a href="/tags/ndk-stack/" rel="tag"># ndk-stack</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/04/18/%E7%AE%A1%E7%90%86/IT%E6%8A%80%E6%9C%AF%E5%9B%A2%E9%98%9F%E7%AE%A1%E7%90%86-%E6%80%BB%E7%BB%93/" rel="prev" title="如何管理IT技术团队">
+      <i class="fa fa-chevron-left"></i> 如何管理IT技术团队
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/07/22/%E6%8A%80%E6%9C%AF/%5Bcocos2dx%5D%E6%B7%B1%E5%85%A5--%E5%87%A0%E4%B8%AA%E4%BB%A3%E8%A1%A8%E6%80%A7%E7%9A%84%E7%B1%BB/" rel="next" title="[cocos2dx]深入了解几个代表性的类">
+      [cocos2dx]深入了解几个代表性的类 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#背景介绍"><span class="nav-number">1.</span> <span class="nav-text">背景介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#怎样获取android的系统日志"><span class="nav-number">2.</span> <span class="nav-text">怎样获取android的系统日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理解NDK的crash-log"><span class="nav-number">3.</span> <span class="nav-text">理解NDK的crash log</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用ndk-stack定位崩溃代码"><span class="nav-number">4.</span> <span class="nav-text">利用ndk-stack定位崩溃代码</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

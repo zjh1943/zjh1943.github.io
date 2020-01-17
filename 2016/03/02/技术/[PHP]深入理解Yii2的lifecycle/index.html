@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要：此文章为自己阅读Yii2框架代码的笔记，故不成为一篇完整的文章。如果你也在读Yii2的源码，或对Yii2很熟悉，可以作为参考。否则，可能很难懂。 \yii\web\Application的生命周期在Yii2中，Application的生命分两步：__contruct()和run()。下面为这两步过程的调用层级关系。每一次缩进代表函数调用栈的增进异步。 123456789101112class">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[PHP]深入理解Yii2的生命周期">
+<meta property="og:url" content="http://blog.bookbook.in/2016/03/02/%E6%8A%80%E6%9C%AF/[PHP]%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84lifecycle/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要：此文章为自己阅读Yii2框架代码的笔记，故不成为一篇完整的文章。如果你也在读Yii2的源码，或对Yii2很熟悉，可以作为参考。否则，可能很难懂。 \yii\web\Application的生命周期在Yii2中，Application的生命分两步：__contruct()和run()。下面为这两步过程的调用层级关系。每一次缩进代表函数调用栈的增进异步。 123456789101112class">
+<meta property="article:published_time" content="2016-03-02T10:12:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="php">
+<meta property="article:tag" content="yii2">
+<meta property="article:tag" content="application">
+<meta property="article:tag" content="run">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bookbook.in/2016/03/02/%E6%8A%80%E6%9C%AF/[PHP]%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84lifecycle/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[PHP]深入理解Yii2的生命周期 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2016/03/02/%E6%8A%80%E6%9C%AF/[PHP]%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84lifecycle/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [PHP]深入理解Yii2的生命周期
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-03-02 18:12:00" itemprop="dateCreated datePublished" datetime="2016-03-02T18:12:00+08:00">2016-03-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要：此文章为自己阅读Yii2框架代码的笔记，故不成为一篇完整的文章。如果你也在读Yii2的源码，或对Yii2很熟悉，可以作为参考。否则，可能很难懂。</p>
+<h1 id="yii-web-Application的生命周期"><a href="#yii-web-Application的生命周期" class="headerlink" title="\yii\web\Application的生命周期"></a>\yii\web\Application的生命周期</h1><p>在Yii2中，Application的生命分两步：__contruct()和run()。下面为这两步过程的调用层级关系。每一次缩进代表函数调用栈的增进异步。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">class Application :</span><br><span class="line">    + __contruct():</span><br><span class="line">        preInit($config); <span class="comment">//把coreComponents()添加到$config中去</span></span><br><span class="line">        registerErrorHandler($config); </span><br><span class="line">        Component::__coustruct($config):</span><br><span class="line">            Yii::configure(<span class="keyword">$this</span>,$config):</span><br><span class="line">                ServiceLocator::set($id,$definition); <span class="comment">//设置每个组件的defination</span></span><br><span class="line">            Application::init():</span><br><span class="line">                Application::bootstrap(); <span class="comment">//每个extension,每个bootstrap,createObject() AND bootstrap().</span></span><br><span class="line">    + run(): <span class="comment">//处理request, 抛发一系列事件。</span></span><br><span class="line">        handleRequest();</span><br><span class="line">        reponse-&gt;send();</span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">class Application extends \yii\base\Application:</span><br><span class="line">    + handleRequest():</span><br><span class="line">        Request::resolve(): <span class="comment">//根据URL解析出 [$route, params]</span></span><br><span class="line">            UrlManager::parseRequest(<span class="keyword">$this</span>); <span class="comment">//根据URL解析出 [$route, params]</span></span><br><span class="line">        $response = runAction($route,$params); <span class="comment">// inherate from Module::runAction():</span></span><br><span class="line">            $controller=Module::createController($route, $params); <span class="comment">//根据$route找到并创建Controller</span></span><br><span class="line">            $response=$controller-&gt;runAction($actionId, $params):</span><br><span class="line">                $action=Controller::createAction($id):</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">new</span> InlineAction(<span class="keyword">$this</span>,$methodName);</span><br><span class="line">                $action-&gt;runWithParams($params):</span><br><span class="line">                    $controller-&gt;bindActionParams(); <span class="comment">//为method准备参数</span></span><br><span class="line">                    call the method;</span><br><span class="line">                <span class="keyword">return</span> $result;</span><br><span class="line">            <span class="keyword">return</span> $response;</span><br><span class="line">        <span class="keyword">return</span> $response;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="coreComponents"><a href="#coreComponents" class="headerlink" title="coreComponents"></a>coreComponents</h1><p>Application::coreComponents() 是一个Application必须的component，不管用户有没有在config文件中设置，这些组件都会创建和使用。<br>所有在config文件中设置或者在coreComponents()中的组件，都不需要手动创建，通过Application-&gt;get($componentId)都可以自动创建。</p>
+<p>\yii\base\Application的核心组件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">coreComponents</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> [</span><br><span class="line">        <span class="string">'log'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\log\Dispatcher'</span>],</span><br><span class="line">        <span class="string">'view'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\View'</span>],</span><br><span class="line">        <span class="string">'formatter'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\i18n\Formatter'</span>],</span><br><span class="line">        <span class="string">'i18n'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\i18n\I18N'</span>],</span><br><span class="line">        <span class="string">'mailer'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\swiftmailer\Mailer'</span>],</span><br><span class="line">        <span class="string">'urlManager'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\UrlManager'</span>],</span><br><span class="line">        <span class="string">'assetManager'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\AssetManager'</span>],</span><br><span class="line">        <span class="string">'security'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\base\Security'</span>],</span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>\yii\web\Application的必要组件：coreComponents()</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">coreComponents</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> array_merge(<span class="keyword">parent</span>::coreComponents(), [</span><br><span class="line">        <span class="string">'request'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\Request'</span>],</span><br><span class="line">        <span class="string">'response'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\Response'</span>],</span><br><span class="line">        <span class="string">'session'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\Session'</span>],</span><br><span class="line">        <span class="string">'user'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\User'</span>],</span><br><span class="line">        <span class="string">'errorHandler'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\ErrorHandler'</span>],</span><br><span class="line">    ]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h1 id="yii-BaseYii"><a href="#yii-BaseYii" class="headerlink" title="\yii\BaseYii"></a>\yii\BaseYii</h1><p><code>BaseYii</code>重要的方法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">clss BaseYii:</span><br><span class="line">    + createObject($type, <span class="keyword">array</span> $params = []); <span class="comment">//根据配置信息创建Object</span></span><br><span class="line">    + configure($object, $properties); <span class="comment">// copy properties</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>到此，我们大概了解了Application的生命周期里，主要做了哪些事情。当然，本文只介绍了概要流程。因为，涉及到具体的<code>coreComponents()</code>我们涉及的很少，而这些才是真正做事情的类，我们将在<a href="http://blog.bookbook.in/ji-zhu/-php-shen-ru-li-jie-yii2de-corecomponents">下一篇文章</a>中介绍。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/php/" rel="tag"># php</a>
+              <a href="/tags/yii2/" rel="tag"># yii2</a>
+              <a href="/tags/application/" rel="tag"># application</a>
+              <a href="/tags/run/" rel="tag"># run</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/03/01/%E6%8A%80%E6%9C%AF/%5BRESTful%5D%E6%9C%80%E4%BC%98%E9%9B%85%E7%9A%84RESTful%E8%AE%BE%E8%AE%A1/" rel="prev" title="[RESTful]最优雅的RESTful设计">
+      <i class="fa fa-chevron-left"></i> [RESTful]最优雅的RESTful设计
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/03/03/%E6%8A%80%E6%9C%AF/%5BPHP%5D%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84coreComponents/" rel="next" title="[PHP]深入理解Yii2的核心组件">
+      [PHP]深入理解Yii2的核心组件 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#yii-web-Application的生命周期"><span class="nav-number">1.</span> <span class="nav-text">\yii\web\Application的生命周期</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#coreComponents"><span class="nav-number">2.</span> <span class="nav-text">coreComponents</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#yii-BaseYii"><span class="nav-number">3.</span> <span class="nav-text">\yii\BaseYii</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

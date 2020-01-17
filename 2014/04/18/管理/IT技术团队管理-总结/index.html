@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要:此文是书籍《行之有效:IT技术团队管理之道》的读书笔记. 主要是方便自己回顾. 您也可以通过此文简要了解此书的内容. IT技术团队员工的特点 高学历, 知识密集型. 技术立身.  人际关系简单. 摩擦大多数由技术产生, 相处也比较容易.  需要较高的自由度.( 经理的职能不是强迫人们工作, 而是让人自觉地工作 ). 一是希望完成任务之后能做自己的事情; 二是希望以自己的方式完成工作. 发展前">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何管理IT技术团队">
+<meta property="og:url" content="http://blog.bookbook.in/2014/04/18/%E7%AE%A1%E7%90%86/IT%E6%8A%80%E6%9C%AF%E5%9B%A2%E9%98%9F%E7%AE%A1%E7%90%86-%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要:此文是书籍《行之有效:IT技术团队管理之道》的读书笔记. 主要是方便自己回顾. 您也可以通过此文简要了解此书的内容. IT技术团队员工的特点 高学历, 知识密集型. 技术立身.  人际关系简单. 摩擦大多数由技术产生, 相处也比较容易.  需要较高的自由度.( 经理的职能不是强迫人们工作, 而是让人自觉地工作 ). 一是希望完成任务之后能做自己的事情; 二是希望以自己的方式完成工作. 发展前">
+<meta property="article:published_time" content="2014-04-17T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="团队管理">
+<meta property="article:tag" content="招聘">
+<meta property="article:tag" content="责任感">
+<meta property="article:tag" content="参与度">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bookbook.in/2014/04/18/%E7%AE%A1%E7%90%86/IT%E6%8A%80%E6%9C%AF%E5%9B%A2%E9%98%9F%E7%AE%A1%E7%90%86-%E6%80%BB%E7%BB%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>如何管理IT技术团队 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2014/04/18/%E7%AE%A1%E7%90%86/IT%E6%8A%80%E6%9C%AF%E5%9B%A2%E9%98%9F%E7%AE%A1%E7%90%86-%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何管理IT技术团队
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2014-04-18 00:00:00" itemprop="dateCreated datePublished" datetime="2014-04-18T00:00:00+08:00">2014-04-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%A1%E7%90%86/" itemprop="url" rel="index">
+                    <span itemprop="name">管理</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要:此文是书籍《行之有效:IT技术团队管理之道》的读书笔记. 主要是方便自己回顾. 您也可以通过此文简要了解此书的内容.</p>
+<h2 id="IT技术团队员工的特点"><a href="#IT技术团队员工的特点" class="headerlink" title="IT技术团队员工的特点"></a>IT技术团队员工的特点</h2><ol>
+<li>高学历, 知识密集型. <strong>技术立身</strong>. </li>
+<li><strong>人际关系简单</strong>. 摩擦大多数由技术产生, 相处也比较容易. </li>
+<li>需要较高的<strong>自由度</strong>.( 经理的职能不是强迫人们工作, 而是让人自觉地工作 ). 一是希望完成任务之后能做自己的事情; 二是希望以自己的方式完成工作.</li>
+<li><strong>发展前途</strong>. 没有发展前途, 就会离开.</li>
+<li>敏感, 流动性大.</li>
+</ol>
+<h2 id="关于招聘的考量"><a href="#关于招聘的考量" class="headerlink" title="关于招聘的考量"></a>关于招聘的考量</h2><ol>
+<li>技术能力满足基本要求</li>
+<li>做事风格与团队匹配</li>
+<li>沟通能力</li>
+<li>工作努力.</li>
+</ol>
+<p>员工的本性很重要, 将来的塑造过程中很难改变.</p>
+<h2 id="关于员工塑造"><a href="#关于员工塑造" class="headerlink" title="关于员工塑造"></a>关于员工塑造</h2><p>通常把员工看作是一员大将, 他们各自为团队镇守一方. 这样, 一个团队的战斗力才全面, 强劲.</p>
+<p>另一个方面来讲, 一个人认为应该帮他(她)的人越多, 他的责任感就越小. 我们需要明确每一个人的责任.</p>
+<h2 id="员工责任感与参与度"><a href="#员工责任感与参与度" class="headerlink" title="员工责任感与参与度"></a>员工责任感与参与度</h2><p>  一个人的积极性和责任感是性格的一部分, 虽然可以提高, 但是不要寄予太大的希望. 招聘的时候对这一方面要好好考察.</p>
+<p>  管理者的一个重要责任就是<strong>让员工负责</strong>. 如果员工不明白自己的职责所在, 或者总认为自己可以部分责任, 管理者会很辛苦, 而且团队和项目会走向失败. </p>
+<p>  员工会执行分配下来的任务, 但是会<strong>支持</strong>自己参与的事情. 简单的执行和内心的支持是不一样的.</p>
+<p>  提高员工参与度的方法:</p>
+<ol>
+<li>外围的事情, 可以由”民主”决定.</li>
+<li>日常的工作, 比如Code review也可以由员工参与</li>
+<li>制定规则前, 征询大家的意见，最好能在会议中通过公开的讨论“诱导”大家得出此规则.</li>
+</ol>
+<h3 id="激发员工的责任感"><a href="#激发员工的责任感" class="headerlink" title="激发员工的责任感"></a>激发员工的责任感</h3><ul>
+<li>第一个要素就是: 自己<strong>以身作则</strong>. 自己处处率先垂范, 不管怎么样的员工都会慢慢跟上.</li>
+<li>光环理论: 如果你希望员工做到什么, 就要去表扬他们,好像他们已经做到了. 员工<strong>主动维护这个形象</strong>的力量是很大的.</li>
+</ul>
+<h2 id="权利和影响力"><a href="#权利和影响力" class="headerlink" title="权利和影响力"></a>权利和影响力</h2><h3 id="官方权利的基础上培养个人影响力"><a href="#官方权利的基础上培养个人影响力" class="headerlink" title="官方权利的基础上培养个人影响力"></a>官方权利的基础上培养个人影响力</h3><p>新管理者要给员工心理上接受和磨合的时间. ( 自己招聘的员工会有先天的”拥护”光环. )</p>
+<p>管理者怎么提高个人影响力: </p>
+<ol>
+<li>专业能力要强</li>
+<li>工作努力.( 风格可有差异 )</li>
+<li>对人态度好, 公平, 关心员工. </li>
+</ol>
+<h3 id="分清楚管与不管的界限"><a href="#分清楚管与不管的界限" class="headerlink" title="分清楚管与不管的界限"></a>分清楚管与不管的界限</h3><p>一个典型的IT技术团队的管理者被授予的权利包括:</p>
+<ol>
+<li>团队日常管理</li>
+<li>项目管理</li>
+<li>绩效考核.</li>
+<li>招聘新员工 ( 其中于技术相关的部分, 一部分的建议权 )</li>
+<li>晋升, 加薪, 解雇等方面的建议权.</li>
+</ol>
+<p><strong>不包括</strong>:</p>
+<ol>
+<li>财务权</li>
+<li>采购权</li>
+<li>完全的人事权</li>
+<li>参与公司商业活动</li>
+<li>参与公司决策</li>
+</ol>
+<p>对于员工的关心, 原则是<strong>只管工作, 不管生活</strong>.<br>但是, 一个人情的社会, 必要的关心也不可缺少, 这里有一个比较简易的划分:</p>
+<blockquote>
+<p>每个人的生活中, 有两部分, 一是普通的生活, 称为公生活, 例如身体不适, 孩子上学, 回家探亲, 周末逛街, 等等. 另一个是私密生活, 包括宗教恋情, 婚姻状态, 性取向, 价值观, 人生观, 等等. 公生活可以谈论, 而且管理者应该主动关心公生活. 对于私生活, 即使员工主动提及, 也不要深入探究. </p>
+</blockquote>
+<h3 id="要约和领地"><a href="#要约和领地" class="headerlink" title="要约和领地"></a>要约和领地</h3><p>心理要约, 是指公司级管理者与员工达成的约定, 特别是没有明文规定的, 彼此在内心达成的一致.</p>
+<p>领地, 可以通俗的理解为”地盘”. 员工都有自己的”领地”, 比如座位空间, 其负责的工作, 等等. 应该尽量尊重他们的”领地”.</p>
+<p>史玉柱说:</p>
+<blockquote>
+<p>一定要尊重部下. 因为你这样做了, 他假如换个单位就碰不到这么好的领导. 所以遇到困难的时候他也不会走.<br>最重要的是你从内心深处一定要把他堪称是和你平等的人,有的老板会觉得你比我低一筹, 我是老板, 你是我的”马仔”. 假如你真的有这种想法, 必然会通过你的言行表现出来. 这样你周围的人必然不会跟你一条心. 人是对等的, 你一旦尊重他们, 他们就会更加尊重你.</p>
+</blockquote>
+<h3 id="关于个性"><a href="#关于个性" class="headerlink" title="关于个性"></a>关于个性</h3><p>一般来说, 比较稳妥的做法是, 管理者只在团队前展示相对中性的喜好和个人观点, 例如读书, 锻炼, 旅游, 等等. 容易引起争论的则要避免, 不要有意或者无意的在团队面前强调, 例如对宗教,民族,社会问题比较尖锐的立场等. </p>
+<p>对于管理者来说, 包容下属以与自己不同的方式工作, 是一大挑战. 君子和而不同, 除非真的有必要, 管理者不要去干预员工的工作方式. </p>
+<h2 id="保持距离"><a href="#保持距离" class="headerlink" title="保持距离"></a>保持距离</h2><blockquote>
+<p>并不是对每一个人好, 就能获得尊重. 尊重原则, 有效执行, 才是管理的真谛.</p>
+</blockquote>
+<h2 id="随时激励"><a href="#随时激励" class="headerlink" title="随时激励"></a>随时激励</h2><p>每个人都需要激励. 激励有一个保鲜期, 所以要及时, 多次激励.</p>
+<h2 id="考核"><a href="#考核" class="headerlink" title="考核"></a>考核</h2><blockquote>
+<p>鼓励并没有错. 但是, 不同的人有不同的性格. 有的同事, 你要委婉一些. 有的同事, 你需要直接一些. 目标是一样的, 让他们能清楚的了解你的意思, 不用去猜. 在绩效考核的时候更要说得清楚, 否则, 会产生误解.</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%9B%A2%E9%98%9F%E7%AE%A1%E7%90%86/" rel="tag"># 团队管理</a>
+              <a href="/tags/%E6%8B%9B%E8%81%98/" rel="tag"># 招聘</a>
+              <a href="/tags/%E8%B4%A3%E4%BB%BB%E6%84%9F/" rel="tag"># 责任感</a>
+              <a href="/tags/%E5%8F%82%E4%B8%8E%E5%BA%A6/" rel="tag"># 参与度</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/03/29/%E6%8A%80%E6%9C%AF/%5Bother%5D%E5%88%A9%E7%94%A8Google%20Speech%20API%E5%AE%9E%E7%8E%B0Speech%20To%20Text/" rel="prev" title="利用Google Speech API实现Speech To Text">
+      <i class="fa fa-chevron-left"></i> 利用Google Speech API实现Speech To Text
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/06/20/%E6%8A%80%E6%9C%AF/%5Bcocos2dx%5D%E5%88%A9%E7%94%A8NDK%E5%B4%A9%E6%BA%83%E6%97%A5%E5%BF%97%E6%9F%A5%E6%89%BEBUG/" rel="next" title="[cocos2dx]利用NDK崩溃日志查找BUG">
+      [cocos2dx]利用NDK崩溃日志查找BUG <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#IT技术团队员工的特点"><span class="nav-number">1.</span> <span class="nav-text">IT技术团队员工的特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关于招聘的考量"><span class="nav-number">2.</span> <span class="nav-text">关于招聘的考量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关于员工塑造"><span class="nav-number">3.</span> <span class="nav-text">关于员工塑造</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#员工责任感与参与度"><span class="nav-number">4.</span> <span class="nav-text">员工责任感与参与度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#激发员工的责任感"><span class="nav-number">4.1.</span> <span class="nav-text">激发员工的责任感</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#权利和影响力"><span class="nav-number">5.</span> <span class="nav-text">权利和影响力</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#官方权利的基础上培养个人影响力"><span class="nav-number">5.1.</span> <span class="nav-text">官方权利的基础上培养个人影响力</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分清楚管与不管的界限"><span class="nav-number">5.2.</span> <span class="nav-text">分清楚管与不管的界限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#要约和领地"><span class="nav-number">5.3.</span> <span class="nav-text">要约和领地</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关于个性"><span class="nav-number">5.4.</span> <span class="nav-text">关于个性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#保持距离"><span class="nav-number">6.</span> <span class="nav-text">保持距离</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#随时激励"><span class="nav-number">7.</span> <span class="nav-text">随时激励</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#考核"><span class="nav-number">8.</span> <span class="nav-text">考核</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

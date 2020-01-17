@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="React 框架的终极目的是：高效的用 js 生成HTML。 为了实现这个目的，react 维护了一个 virtual DOM ，然后再根据 virtual DOM 生成真正的 DOM，来达到「高效」的目的。说到高效，其实就是回答这两个问题：  When do I re-render? Answer: When I observe that the data is dirty. How do I">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[react]深入 - React 仅仅是一个 view 框架">
+<meta property="og:url" content="http://blog.bookbook.in/2017/08/23/%E6%8A%80%E6%9C%AF/react-%E6%B7%B1%E5%85%A5-React-%E4%BB%85%E4%BB%85%E6%98%AF%E4%B8%80%E4%B8%AA-view-%E6%A1%86%E6%9E%B6/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="React 框架的终极目的是：高效的用 js 生成HTML。 为了实现这个目的，react 维护了一个 virtual DOM ，然后再根据 virtual DOM 生成真正的 DOM，来达到「高效」的目的。说到高效，其实就是回答这两个问题：  When do I re-render? Answer: When I observe that the data is dirty. How do I">
+<meta property="article:published_time" content="2017-08-23T02:18:14.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="react">
+<meta property="article:tag" content="reactjs">
+<meta property="article:tag" content="redux">
+<meta property="article:tag" content="mvc">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bookbook.in/2017/08/23/%E6%8A%80%E6%9C%AF/react-%E6%B7%B1%E5%85%A5-React-%E4%BB%85%E4%BB%85%E6%98%AF%E4%B8%80%E4%B8%AA-view-%E6%A1%86%E6%9E%B6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[react]深入 - React 仅仅是一个 view 框架 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2017/08/23/%E6%8A%80%E6%9C%AF/react-%E6%B7%B1%E5%85%A5-React-%E4%BB%85%E4%BB%85%E6%98%AF%E4%B8%80%E4%B8%AA-view-%E6%A1%86%E6%9E%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [react]深入 - React 仅仅是一个 view 框架
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-08-23 10:18:14" itemprop="dateCreated datePublished" datetime="2017-08-23T10:18:14+08:00">2017-08-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><strong>React 框架的终极目的是：高效的用 js 生成HTML</strong>。</p>
+<p>为了实现这个目的，react 维护了一个 virtual DOM ，然后再根据 virtual DOM 生成真正的 DOM，来达到「高效」的目的。说到高效，其实就是回答这两个问题：</p>
+<ol>
+<li>When do I re-render? Answer: When I observe that the data is dirty.</li>
+<li>How do I re-render efficiently? Answer: Using a virtual DOM to generate a real DOM patch.</li>
+</ol>
+<p>客户端常见的判断 re-render 时机的方法有下面两种：</p>
+<ol>
+<li>diff。这种方法是：每个渲染周期（俗称每一帧），都会进行 render，然后 render 出来的结构，跟上一次 render 的结果进行 diff；找出不同的部分，再对 DOM 中对应的部分进行更新。</li>
+<li>数据变动检测。检测会导致界面变动的数据源，当数据有变化时，进行 re-render。</li>
+</ol>
+<p>两种方式都有自己的优势和劣势，更多的时候，视图框架会把两者结合起来用。<br>react 主要用的第二种方法，因为它效率更高。因为本质上讲，方法一是 diff virtual DOM，方法二是 diff props and state。一般情况下，props &amp; state 的数据量会小一些。当然，你也可以写一个 Component，props 结构非常复杂，但是只用了其中一个字段用来渲染，渲染的节点数也很少。这种设计属于不好的设计，应该尽量避免。<strong>好的 Component 应该是 props 尽量扁平和简洁，去掉根渲染无关的字段。</strong> 这样才能充分发挥 react 的渲染性能。</p>
+<p><a href="https://stackoverflow.com/questions/21109361/why-is-reacts-concept-of-virtual-dom-said-to-be-more-performant-than-dirty-mode" target="_blank" rel="noopener" title="virtual-dom module">更多关于 virtual DOM </a></p>
+<p>React 为了实现如上的构想，为我们提供了很多概念和代码，下面逐一讲解：</p>
+<h3 id="jsx-标记语言"><a href="#jsx-标记语言" class="headerlink" title="jsx 标记语言"></a>jsx 标记语言</h3><p>React 使用 jsx 标记语言。它跟 html 语言非常相似，使用起来非常方便。如果没有它，我们只能通过 <code>Rect.createElement( &#39;canvas&#39;, {…props} )</code> 的方式来生成一个 <code>cavans</code> 的描述，然后，react 会把这个描述「渲染」成真正的 Html <code>&lt;canvas ...props /&gt;</code>。甚至，如果没有 react 框架，我们只能用 <code>let element = document.createElement(&#39;canvas&#39;, [, options])</code> 来创建一个 Html 元素。也许，你会觉得这三种方式代码量差不多。但是，当有多层嵌套的视图结构时，jsx 标记语言的优势就显现出来了。你可以试着把以下 jsx 语言「翻译」为后面两种写法。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">render() &#123;</span><br><span class="line">    <span class="keyword">const</span> taskCount = <span class="keyword">this</span>.props.taskCount;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> (<span class="xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">className</span>=<span class="string">"step-content create-data-content"</span>&gt;</span></span></span><br><span class="line">        &lt;div className="info-bar" &gt;</span><br><span class="line">            &lt;div&gt;</span><br><span class="line">                &lt;div className="ui-font-secondary4"&gt;&#123;'总共统计'&#125;&lt;/div&gt;</span><br><span class="line">                &lt;div className="ui-font-h2"&gt;&#123;`$&#123;taskCount&#125;条任务`&#125;&lt;/div&gt;</span><br><span class="line">            &lt;/div&gt;</span><br><span class="line">            &lt;div&gt;</span><br><span class="line">                &#123;this.renderTabBar()&#125;</span><br><span class="line">            &lt;/div&gt;</span><br><span class="line"><span class="xml">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="xml">        &#123;this.renderContent()&#125;</span></span><br><span class="line"><span class="xml">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="组件抽象-Component"><a href="#组件抽象-Component" class="headerlink" title="组件抽象 Component"></a>组件抽象 Component</h3><p>React 提供了一个类 Component 作为所有组件的基类。它的意义是：</p>
+<ol>
+<li>它为我们创造了一个「组件」的概念，代表可重用的可视元素的最小单位。我们按照这个概念去开发，能很容易写出高复用性的视图代码。</li>
+<li>它提供了基本的生命周期回调函数，满足我们多样的需求。比如我们常用的: <code>componentDidMount</code>, <code>componentWillReceiveProps</code>, <code>componentWillUnmount</code>。</li>
+<li>提供了 props 接口，为父容器和子容器之间信息交流提供标准通道。</li>
+<li>提供 state，作为容器内部状态管理的落脚地。</li>
+</ol>
+<h3 id="可视组组件的描述"><a href="#可视组组件的描述" class="headerlink" title="可视组组件的描述"></a>可视组组件的描述</h3><p>每个组件都有一个 render 方法。</p>
+<h3 id="高效的翻译器：描述-gt"><a href="#高效的翻译器：描述-gt" class="headerlink" title="高效的翻译器：描述 =&gt;"></a>高效的翻译器：描述 =&gt;</h3>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+              <a href="/tags/reactjs/" rel="tag"># reactjs</a>
+              <a href="/tags/redux/" rel="tag"># redux</a>
+              <a href="/tags/mvc/" rel="tag"># mvc</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/08/23/%E6%8A%80%E6%9C%AF/react-React%E6%B7%B1%E5%85%A5-%E4%B8%80%E7%AD%89%E5%85%AC%E6%B0%91-props-onChange/" rel="prev" title="[react]深入 - 一等公民 props & onChange">
+      <i class="fa fa-chevron-left"></i> [react]深入 - 一等公民 props & onChange
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/01/13/%E8%AF%BB%E4%B9%A6/%E5%AD%A6%E4%BC%9A%E6%8F%90%E9%97%AE/" rel="next" title="读书/学会提问">
+      读书/学会提问 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#jsx-标记语言"><span class="nav-number">1.</span> <span class="nav-text">jsx 标记语言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#组件抽象-Component"><span class="nav-number">2.</span> <span class="nav-text">组件抽象 Component</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#可视组组件的描述"><span class="nav-number">3.</span> <span class="nav-text">可视组组件的描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#高效的翻译器：描述-gt"><span class="nav-number">4.</span> <span class="nav-text">高效的翻译器：描述 &#x3D;&gt;</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

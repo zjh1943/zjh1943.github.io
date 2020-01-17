@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="简介： 做过IOS开发的朋友, 肯定知道UIScrollView有一个isPaged属性. 当设置其为true的时候, 滑动会自动分页. 即, 每次滑动之后, 会停止在整页的位置. 当开始介入cocos2dx开发的时候, 却发现跟UIScrollView接口十分相似的CCScrollView却没有这个分页属性. 于是手动实现了一个.  基础知识在常见的图形引擎中, 滑动组件的定义里有两个重要的概念">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[cocos2dx]让CCScrollView支持分页">
+<meta property="og:url" content="http://blog.bookbook.in/2014/03/29/%E6%8A%80%E6%9C%AF/[cocos2dx]%E8%AE%A9CCScrollView%E6%94%AF%E6%8C%81%E5%88%86%E9%A1%B5/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="简介： 做过IOS开发的朋友, 肯定知道UIScrollView有一个isPaged属性. 当设置其为true的时候, 滑动会自动分页. 即, 每次滑动之后, 会停止在整页的位置. 当开始介入cocos2dx开发的时候, 却发现跟UIScrollView接口十分相似的CCScrollView却没有这个分页属性. 于是手动实现了一个.  基础知识在常见的图形引擎中, 滑动组件的定义里有两个重要的概念">
+<meta property="article:published_time" content="2014-03-28T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="cocos2dx">
+<meta property="article:tag" content="CCScrollView">
+<meta property="article:tag" content="page">
+<meta property="article:tag" content="UIScrollView">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bookbook.in/2014/03/29/%E6%8A%80%E6%9C%AF/[cocos2dx]%E8%AE%A9CCScrollView%E6%94%AF%E6%8C%81%E5%88%86%E9%A1%B5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[cocos2dx]让CCScrollView支持分页 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2014/03/29/%E6%8A%80%E6%9C%AF/[cocos2dx]%E8%AE%A9CCScrollView%E6%94%AF%E6%8C%81%E5%88%86%E9%A1%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [cocos2dx]让CCScrollView支持分页
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2014-03-29 00:00:00" itemprop="dateCreated datePublished" datetime="2014-03-29T00:00:00+08:00">2014-03-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>简介： 做过<code>IOS</code>开发的朋友, 肯定知道<code>UIScrollView</code>有一个<code>isPaged</code>属性. 当设置其为<code>true</code>的时候, 滑动会自动分页. 即, 每次滑动之后, 会停止在整页的位置. 当开始介入<code>cocos2dx</code>开发的时候, 却发现跟<code>UIScrollView</code>接口十分相似的<code>CCScrollView</code>却没有这个分页属性. 于是手动实现了一个. </p>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><p>在常见的图形引擎中, 滑动组件的定义里有两个重要的概念</p>
+<ul>
+<li><code>viewSize</code>: 这个大小值得是组件占用屏幕的大小. 即实际大小.</li>
+<li><code>contentSize</code>: 这个大小是一个虚拟的大小. 我们之所以要滚动, 必然是因为需要展示的内容比现实的屏幕空间大. 我们需要滚动屏幕, 才能浏览到所有的显示内容. 这个<code>contentSize</code>即是我们虚拟出来的, 需要展示的所有内容加起来的大小.</li>
+<li>分页: 最典型的例子就是iPhone的主界面. 我们不能任意指定一个位置, 让滑动固定在那里. 它要么停留在第一页, 要么停留在第二页, 不会是第0.5页. 每一页的大小是<code>viewSize</code>决定的. 那么总页数就是<code>total_page_count = ceil(viewSize / contentSize )</code></li>
+</ul>
+<h2 id="CCScrollView源码查看"><a href="#CCScrollView源码查看" class="headerlink" title="CCScrollView源码查看"></a>CCScrollView源码查看</h2><p>我们知道, <code>cocos2dx</code>的触摸都是通过<code>CCTouchDelegate</code>来实现的. 如果对<code>cocos2dx</code>的touch机制不熟悉的, 可以参考博客.  </p>
+<h3 id="简单介绍ccTouchBegan方法的功能"><a href="#简单介绍ccTouchBegan方法的功能" class="headerlink" title="简单介绍ccTouchBegan方法的功能:"></a>简单介绍ccTouchBegan方法的功能:</h3><p><code>ccTouchBegan</code>是<code>cocos2dx</code>touch机制的第一个方法. 这个方法的接口如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool CCScrollView::ccTouchBegan(CCTouch* touch, CCEvent* event)</span><br></pre></td></tr></table></figure>
+<p>返回的<code>bool</code>值, 告诉<code>cocos2dx</code>中touch事件的管理者<code>CCTouchDispatcher</code>, 当前组件是否处理这一次触摸:  </p>
+<ul>
+<li>如果返回<code>true</code>, 则<code>CCTouchDispatcher</code>会根据用户的touch动作, 在后续调用本组件的<code>ccTouchMoved</code>, <code>ccTouchEnded</code>, <code>ccTouchCancelled</code>方法.</li>
+<li>如果返回<code>false</code>, 则表示当前组件不处理此次touch事件. 后续的三个方法不会被调用.</li>
+</ul>
+<h3 id="CCScrollView-ccTouchBegan-解析"><a href="#CCScrollView-ccTouchBegan-解析" class="headerlink" title="CCScrollView::ccTouchBegan()解析"></a>CCScrollView::ccTouchBegan()解析</h3><p>无码无真相, 先贴一张代码图:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">bool CCScrollView::ccTouchBegan(CCTouch* touch, CCEvent* event)</span><br><span class="line">&#123;</span><br><span class="line">    &#x2F;&#x2F;tag-1</span><br><span class="line">    if (!this-&gt;isVisible())</span><br><span class="line">    &#123;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    &#x2F;&#x2F;tag-2</span><br><span class="line">    CCRect frame &#x3D; getViewRect();</span><br><span class="line">    &#x2F;&#x2F;dispatcher does not know about clipping. reject touches outside visible bounds.</span><br><span class="line">    if (m_pTouches-&gt;count() &gt; 2 ||</span><br><span class="line">        m_bTouchMoved          ||</span><br><span class="line">        !frame.containsPoint(m_pContainer-&gt;convertToWorldSpace(m_pContainer-&gt;convertTouchToNodeSpace(touch))))</span><br><span class="line">    &#123;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F;tag-3</span><br><span class="line">    if (m_pTouches-&gt;count() &#x3D;&#x3D; 1)</span><br><span class="line">    &#123; &#x2F;&#x2F; scrolling</span><br><span class="line">        m_tTouchPoint     &#x3D; this-&gt;convertTouchToNodeSpace(touch);</span><br><span class="line">        m_bTouchMoved     &#x3D; false;</span><br><span class="line">        m_bDragging     &#x3D; true; &#x2F;&#x2F;dragging started</span><br><span class="line">        m_tScrollDistance &#x3D; ccp(0.0f, 0.0f);</span><br><span class="line">        m_fTouchLength    &#x3D; 0.0f;</span><br><span class="line">    &#125;</span><br><span class="line">    &#x2F;&#x2F;tag-4</span><br><span class="line">    else if (m_pTouches-&gt;count() &#x3D;&#x3D; 2)</span><br><span class="line">    &#123;</span><br><span class="line">        ...</span><br><span class="line">        m_bDragging  &#x3D; false;</span><br><span class="line">    &#125; </span><br><span class="line">    return true;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我把跟本博文主题关系不大的代码用省略号(…)代替了. 下面是相关代码解释:  </p>
+<ul>
+<li>tag-1 当此组件隐藏的时候, 不予处理.</li>
+<li>tag-2 当此触摸点数大于2或者触摸点不在当前组件的显示范围内的时候, 不予处理.</li>
+<li>tag-3 这是我们的重点. 当触摸点数等于1的时候, 处理滑动操作. </li>
+<li>tag-4 触摸点等于2的时候, 响应缩放处理.</li>
+</ul>
+<h2 id="源代码的修改"><a href="#源代码的修改" class="headerlink" title="源代码的修改"></a>源代码的修改</h2><h3 id="变量申明及方法增加"><a href="#变量申明及方法增加" class="headerlink" title="变量申明及方法增加"></a>变量申明及方法增加</h3><p>在<code>CCScrollView.h</code>文件中增加以下成员变量和方法:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;CCScrollView.h</span><br><span class="line">public:</span><br><span class="line">	bool isPaged()&#123; return m_bPaged; &#125;;</span><br><span class="line">	void setPaged( bool value )&#123; m_bPaged &#x3D; value; &#125;;</span><br><span class="line">protected:</span><br><span class="line">    clock_t m_touchBeganTime;</span><br><span class="line">	int     m_touchBeganOffset;</span><br><span class="line">	int     m_targetPage;</span><br><span class="line">	int     m_currPage;</span><br><span class="line">	float   m_pageAccSpeed;</span><br><span class="line">	float   m_distanceRatioOfTurn;</span><br><span class="line">	bool    m_bPaged;</span><br><span class="line">	</span><br><span class="line">	void __pageTouchBegan();    &#x2F;&#x2F;在CCScrollView的滑动被触发的时候调用</span><br><span class="line">	bool __pageTouchEnd();      &#x2F;&#x2F;在ScrollView的滑动停止的时候调用</span><br><span class="line">	void __pageTouchCancel();   &#x2F;&#x2F;在滑动被取消的时候调用</span><br><span class="line">	void __pageClearTouch();    &#x2F;&#x2F;在一次滑动结束的时候调用</span><br></pre></td></tr></table></figure>
+
+<h3 id="方法的实现"><a href="#方法的实现" class="headerlink" title="方法的实现:"></a>方法的实现:</h3><p>四个方法的代码可能要占用一些篇幅, 所以在这里, 先简要讲一下原理:</p>
+<ol>
+<li>在touch开始的时候, 记录一下当时时间<code>m_touchBeganTime</code>和开始滑动的位置<code>m_touchBeganOffset</code>.</li>
+<li>在touch结束的时候, 获取结束时刻的时间和位置. 我们有两个标准来判断应该翻页还是停留在上一页:<ul>
+<li>如果滑动距离超过一页距离的一半(或者是其他阈值),那么判断为用户希望翻到下一页(或上一页)</li>
+<li>如果滑动速度超过一个阈值, 那么判断为用户希望翻到下一页(或上一页)  </li>
+</ul>
+</li>
+<li>当做了判断之后, 即可滑动到对应的位置.</li>
+</ol>
+<p>下面是四个方法的实现, 实现了上述原理.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line">void CCScrollView::__pageTouchBegan()</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;&#x2F;仅在设置了分页属性, 并且只有一个滑动方向的时候, 才支持分页.</span><br><span class="line">	if( !m_bPaged || ( m_eDirection !&#x3D; kCCScrollViewDirectionHorizontal &amp;&amp; m_eDirection !&#x3D; kCCScrollViewDirectionVertical )) return ;</span><br><span class="line"></span><br><span class="line">	&#x2F;&#x2F;记录初试时间和位置</span><br><span class="line">	m_touchBeganTime &#x3D; clock();</span><br><span class="line">	m_touchBeganOffset &#x3D; m_eDirection &#x3D;&#x3D; kCCScrollViewDirectionHorizontal ? getContentOffset().x : getContentOffset().y;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">bool CCScrollView::__pageTouchEnd()</span><br><span class="line">&#123;</span><br><span class="line">	if( !m_bPaged || ( m_eDirection !&#x3D; kCCScrollViewDirectionHorizontal &amp;&amp; m_eDirection !&#x3D; kCCScrollViewDirectionVertical )) return false ;</span><br><span class="line"></span><br><span class="line">	&#x2F;&#x2F;constant</span><br><span class="line">	const float PAGE_DISTENCE &#x3D; m_eDirection &#x3D;&#x3D; kCCScrollViewDirectionHorizontal ? getViewSize().width : getViewSize().height ;</span><br><span class="line">	if( PAGE_DISTENCE &lt;&#x3D; 0 ) return false;</span><br><span class="line"></span><br><span class="line">	const float MAX_PAGE &#x3D; ( m_eDirection &#x3D;&#x3D; kCCScrollViewDirectionHorizontal ? getContentSize().width : getContentSize().height ) &#x2F; PAGE_DISTENCE;</span><br><span class="line">	const float MIN_PAGE &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	float currOffset &#x3D; m_eDirection &#x3D;&#x3D; kCCScrollViewDirectionHorizontal ? getContentOffset().x : getContentOffset().y;</span><br><span class="line">	float deltaOffset &#x3D; -(currOffset - m_touchBeganOffset);</span><br><span class="line">	clock_t currTime &#x3D; clock();</span><br><span class="line">	float speed &#x3D;  currTime !&#x3D; m_touchBeganTime ? deltaOffset &#x2F; ( currTime - m_touchBeganTime ) : 0;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	m_targetPage &#x3D; m_currPage;</span><br><span class="line">	if( abs(deltaOffset) &gt;&#x3D; TURN_PAGE_MIN_OFFSET_RATIO*PAGE_DISTENCE )</span><br><span class="line">	&#123;&#x2F;&#x2F;滑动距离大于某一阈值.</span><br><span class="line">		</span><br><span class="line">		if( deltaOffset &gt; 0 )</span><br><span class="line">		&#123;</span><br><span class="line">			m_targetPage &#x3D; m_currPage + 1;</span><br><span class="line">		&#125;</span><br><span class="line">		else if( deltaOffset &lt; 0 )</span><br><span class="line">		&#123;</span><br><span class="line">			m_targetPage &#x3D; m_currPage - 1;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	else if( abs(speed) &gt;&#x3D; TURN_PAGE_SPEED )</span><br><span class="line">	&#123;&#x2F;&#x2F;速度大于某一阈值.</span><br><span class="line">		if( speed &gt; 0 )</span><br><span class="line">		&#123;</span><br><span class="line">			m_targetPage &#x3D; m_currPage + 1;</span><br><span class="line">		&#125;</span><br><span class="line">		else if( speed &lt; 0 )</span><br><span class="line">		&#123;</span><br><span class="line">			m_targetPage &#x3D; m_currPage - 1;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	if( m_targetPage &gt; MAX_PAGE ) m_targetPage &#x3D; MAX_PAGE;</span><br><span class="line">	else if( m_targetPage &lt; MIN_PAGE ) m_targetPage &#x3D; MIN_PAGE;</span><br><span class="line"></span><br><span class="line">	float targetOffset &#x3D; -m_targetPage*( m_eDirection &#x3D;&#x3D; kCCScrollViewDirectionHorizontal ? getViewSize().width : getViewSize().height );</span><br><span class="line">	float pageDurateion &#x3D; 0.5;</span><br><span class="line">	CCPoint targetPointOffset &#x3D; m_eDirection &#x3D;&#x3D; kCCScrollViewDirectionHorizontal ? ccp( targetOffset, getContentOffset().y ) : ccp(getContentOffset().x, targetOffset );</span><br><span class="line">	setContentOffsetInDuration(targetPointOffset, pageDurateion);</span><br><span class="line"></span><br><span class="line">	m_currPage &#x3D; m_targetPage;</span><br><span class="line">	</span><br><span class="line">	return true;</span><br><span class="line">&#125;</span><br><span class="line">void CCScrollView::__pageTouchCancel()</span><br><span class="line">&#123;</span><br><span class="line">	if( !m_bPaged || ( m_eDirection !&#x3D; kCCScrollViewDirectionHorizontal &amp;&amp; m_eDirection !&#x3D; kCCScrollViewDirectionVertical )) return ;</span><br><span class="line"></span><br><span class="line">	__pageClearTouch();</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">void CCScrollView::__pageClearTouch()</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;&#x2F;clear所有状态</span><br><span class="line">	m_touchBeganOffset &#x3D; 0;</span><br><span class="line">	m_touchBeganTime &#x3D; 0;</span><br><span class="line">	m_targetPage &#x3D; m_currPage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="修改后的CCScrollView-h-CCScrollView-cpp"><a href="#修改后的CCScrollView-h-CCScrollView-cpp" class="headerlink" title="修改后的CCScrollView.h, CCScrollView.cpp"></a>修改后的CCScrollView.h, CCScrollView.cpp</h2><p>这里是修改后的文件, 可以直接下载覆盖.<br><a href="http://pan.baidu.com/..." target="_blank" rel="noopener">CCScrollView.zip</a><br><strong><em>注意</em></strong>:上述代码仅在<code>cocos2dx-2.2.2</code>和<code>cocos2dx-2.2.1</code>版本上验证通过. 其他版本请根据上述原理做适当的修改<del>~</del></p>
+<blockquote>
+<p>Written with <a href="https://stackedit.io/" target="_blank" rel="noopener">StackEdit</a>.</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cocos2dx/" rel="tag"># cocos2dx</a>
+              <a href="/tags/CCScrollView/" rel="tag"># CCScrollView</a>
+              <a href="/tags/page/" rel="tag"># page</a>
+              <a href="/tags/UIScrollView/" rel="tag"># UIScrollView</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/03/23/%E6%8A%80%E6%9C%AF/%5Bcocos2dx%5D%E8%AE%A9UIButton%E6%94%AF%E6%8C%81disable%E7%8A%B6%E6%80%81/" rel="prev" title="[cocos2dx]让UIButton支持disable状态">
+      <i class="fa fa-chevron-left"></i> [cocos2dx]让UIButton支持disable状态
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/03/29/%E6%8A%80%E6%9C%AF/%5Bother%5D%E5%88%A9%E7%94%A8Google%20Speech%20API%E5%AE%9E%E7%8E%B0Speech%20To%20Text/" rel="next" title="利用Google Speech API实现Speech To Text">
+      利用Google Speech API实现Speech To Text <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础知识"><span class="nav-number">1.</span> <span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CCScrollView源码查看"><span class="nav-number">2.</span> <span class="nav-text">CCScrollView源码查看</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简单介绍ccTouchBegan方法的功能"><span class="nav-number">2.1.</span> <span class="nav-text">简单介绍ccTouchBegan方法的功能:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CCScrollView-ccTouchBegan-解析"><span class="nav-number">2.2.</span> <span class="nav-text">CCScrollView::ccTouchBegan()解析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源代码的修改"><span class="nav-number">3.</span> <span class="nav-text">源代码的修改</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#变量申明及方法增加"><span class="nav-number">3.1.</span> <span class="nav-text">变量申明及方法增加</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法的实现"><span class="nav-number">3.2.</span> <span class="nav-text">方法的实现:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#修改后的CCScrollView-h-CCScrollView-cpp"><span class="nav-number">4.</span> <span class="nav-text">修改后的CCScrollView.h, CCScrollView.cpp</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

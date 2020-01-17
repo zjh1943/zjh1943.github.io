@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="在cocostudio中添加一个UIButton组件, 我们可以看到通常以一下按钮的三态:normal,pressed,disable. 但是,当我们设置了disable状态之后, 在我们的游戏项目中, 对某个按钮执行button-&gt;setEnable(false)后, 按钮居然完全不见了?!">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[cocos2dx]让UIButton支持disable状态">
+<meta property="og:url" content="http://blog.bookbook.in/2014/03/23/%E6%8A%80%E6%9C%AF/[cocos2dx]%E8%AE%A9UIButton%E6%94%AF%E6%8C%81disable%E7%8A%B6%E6%80%81/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="在cocostudio中添加一个UIButton组件, 我们可以看到通常以一下按钮的三态:normal,pressed,disable. 但是,当我们设置了disable状态之后, 在我们的游戏项目中, 对某个按钮执行button-&gt;setEnable(false)后, 按钮居然完全不见了?!">
+<meta property="og:image" content="https://lh6.googleusercontent.com/-bwcB18CZFyo/Uy7Ywf_ew9I/AAAAAAAACSo/G1QRO-a4z9Y/s0/QQ%E6%88%AA%E5%9B%BE20140323205043.png">
+<meta property="article:published_time" content="2014-03-23T14:16:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="cocos2dx">
+<meta property="article:tag" content="uibutton">
+<meta property="article:tag" content="button">
+<meta property="article:tag" content="disable">
+<meta property="article:tag" content="uiwidget">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://lh6.googleusercontent.com/-bwcB18CZFyo/Uy7Ywf_ew9I/AAAAAAAACSo/G1QRO-a4z9Y/s0/QQ%E6%88%AA%E5%9B%BE20140323205043.png">
+
+<link rel="canonical" href="http://blog.bookbook.in/2014/03/23/%E6%8A%80%E6%9C%AF/[cocos2dx]%E8%AE%A9UIButton%E6%94%AF%E6%8C%81disable%E7%8A%B6%E6%80%81/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[cocos2dx]让UIButton支持disable状态 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2014/03/23/%E6%8A%80%E6%9C%AF/[cocos2dx]%E8%AE%A9UIButton%E6%94%AF%E6%8C%81disable%E7%8A%B6%E6%80%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [cocos2dx]让UIButton支持disable状态
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2014-03-23 22:16:00" itemprop="dateCreated datePublished" datetime="2014-03-23T22:16:00+08:00">2014-03-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">在cocostudio中添加一个UIButton组件, 我们可以看到通常以一下按钮的三态:normal,pressed,disable. 但是,当我们设置了disable状态之后, 在我们的游戏项目中, 对某个按钮执行button->setEnable(false)后, 按钮居然完全不见了?!</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要: 主要解决cocos2dx-2.2.2版本中, UIButton显示不了disable状态图的问题. 顺便, 理解了一下cocos2dx中UIWidget的渲染原理.</p>
+<h3 id="发现问题"><a href="#发现问题" class="headerlink" title="发现问题"></a>发现问题</h3><p><img src="https://lh6.googleusercontent.com/-bwcB18CZFyo/Uy7Ywf_ew9I/AAAAAAAACSo/G1QRO-a4z9Y/s0/QQ%E6%88%AA%E5%9B%BE20140323205043.png" alt="enter image description here" title="cocostudio-capture-button-disable.png"></p>
+<p>在cocostudio中添加一个UIButton组件, 我们可以看到通常以一下按钮的三态:<code>normal</code>,<code>pressed</code>,<code>disable</code>. 但是,当我们设置了<code>disable</code>状态之后, 在我们的游戏项目中, 对某个按钮执行<code>button-&gt;setEnable(false)</code>后, 按钮居然完全不见了?!  </p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><ol>
+<li><p>修改<code>Widget::visit()</code>方法, 改为:   </p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> Widget::visit()</span><br><span class="line">&#123;</span><br><span class="line">    CCNodeRGBA::visit();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> 即, 删除<code>if</code>判断.</p>
+</li>
+<li><p>修改<code>Widget::setEnable()</code>方法, 改为:   </p>
+<pre><code class="cpp"><span class="keyword">void</span> Widget::setEnabled(<span class="keyword">bool</span> enabled)
+{
+    _enabled = enabled;
+    <span class="keyword">if</span>(_widgetChildren &amp;&amp; _widgetChildren-&gt;count() &gt; <span class="number">0</span>)
+    {
+        CCObject* child;
+        CCARRAY_FOREACH(_widgetChildren, child)
+        {
+            ((Widget*)child)-&gt;setEnabled(enabled);
+        }
+    }
+    setBright( enabled );<span class="comment">//增加此行</span>
+}</code></pre>
+<p> 即, 增加<code>setBright( enabled );</code>行.</p>
+</li>
+</ol>
+<p>如果想知其所以然的, 下面是解释.</p>
+<h3 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h3><h4 id="Widget的诡异渲染"><a href="#Widget的诡异渲染" class="headerlink" title="Widget的诡异渲染"></a>Widget的诡异渲染</h4><p><code>Widget::visit()</code>的实现如下:  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> Widget::visit()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (_enabled)</span><br><span class="line">    &#123;</span><br><span class="line">        CCNodeRGBA::visit();</span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果您没时间仔细看过cocos2dx的源码, 这里可以有一个简单的解释:  </p>
+<ol>
+<li><p><code>visit()</code>方法最初是从<code>CCNode</code>继承过来的. 也就是说<strong><em>任何显示对象</em></strong>都有这个方法. </p>
+</li>
+<li><p><code>CCNode::visit()</code>就是CCNode的渲染函数, 是视图渲染中最重要的一个函数, 跟IOS开发中的<code>UIView::draw()</code>功能类似. 框架在每一帧都会调用这个方法, 而这个方法负责当前组件的<code>openGL</code>绘制. 我们可以看下<code>CCNode::visit()</code>的实现来作为验证:</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> CCNode::visit()</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">this</span>-&gt;draw();</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//算了, 这段代码有点长, 有些人时间比较宝贵可能没兴趣看. 我就放在***附录***了.(*^__^*)</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p>看到这里, 你肯定一经发现问题了: 为什么只有在<code>_enabled</code>为<code>true</code>的时候才渲染?难道不是坑爹么?<code>disable</code>状态就不理了么?<br>可能cocos2dx另有打算, 我没理解清楚. 不过这个功能既然不符合我的要求, 我就果断的把那个<code>if</code>去掉了. (谁让咱们是程序员呢?).  </p>
+<p>但是, 问题并没有完全结束. 还是没有显示<code>disable</code>状态.  </p>
+<h4 id="Widget的enable"><a href="#Widget的enable" class="headerlink" title="Widget的enable?"></a>Widget的enable?</h4><p><code>UIButton::setEnable()</code>方法比较短, 贴出来看看. </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> Widget::setEnabled(<span class="keyword">bool</span> enabled)</span><br><span class="line">&#123;</span><br><span class="line">    _enabled = enabled;</span><br><span class="line">    <span class="keyword">if</span>(_widgetChildren &amp;&amp; _widgetChildren-&gt;count() &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        CCObject* child;</span><br><span class="line">        CCARRAY_FOREACH(_widgetChildren, child)</span><br><span class="line">        &#123;</span><br><span class="line">            ((Widget*)child)-&gt;setEnabled(enabled);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>发现这段代码除了把<code>_enable</code>和所有孩子的<code>_enable</code>状态设为<code>false</code>, 没做任何事情. 通过查看<code>widget</code>的代码, 很容易看到, <code>widget</code>的三态是通过下面的是三个函数实现的:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> Widget::onPressStateChangedToNormal()&#123;&#125;</span><br><span class="line"><span class="keyword">void</span> Widget::onPressStateChangedToPressed()&#123;&#125;</span><br><span class="line"><span class="keyword">void</span> Widget::onPressStateChangedToDisabled()&#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>不错,他们都是空函数.子类根据需要来实现这三个函数.<br>下面是<code>setBright</code>的实现:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> Widget::setBright(<span class="keyword">bool</span> bright)</span><br><span class="line">&#123;</span><br><span class="line">    _bright = bright;</span><br><span class="line">    <span class="keyword">if</span> (_bright)</span><br><span class="line">    &#123;</span><br><span class="line">        _brightStyle = BRIGHT_NONE;</span><br><span class="line">        setBrightStyle(BRIGHT_NORMAL);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        onPressStateChangedToDisabled();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由上代码可以看出. 而我们调用<code>setBright(false)</code>, 即可根据<code>widget</code>当前的状态, 渲染不同的图像.</p>
+<h3 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h3><h4 id="代码片段一CCNode-visit"><a href="#代码片段一CCNode-visit" class="headerlink" title="代码片段一CCNode::visit()"></a>代码片段一<code>CCNode::visit()</code></h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> CCNode::visit()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// quick return if not visible. children won't be drawn.</span></span><br><span class="line">    <span class="keyword">if</span> (!m_bVisible)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    kmGLPushMatrix();</span><br><span class="line"></span><br><span class="line">     <span class="keyword">if</span> (m_pGrid &amp;&amp; m_pGrid-&gt;isActive())</span><br><span class="line">     &#123;</span><br><span class="line">         m_pGrid-&gt;beforeDraw();</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">this</span>-&gt;transform();</span><br><span class="line"></span><br><span class="line">    CCNode* pNode = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(m_pChildren &amp;&amp; m_pChildren-&gt;count() &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        sortAllChildren();</span><br><span class="line">        <span class="comment">// draw children zOrder &lt; 0</span></span><br><span class="line">        ccArray *arrayData = m_pChildren-&gt;data;</span><br><span class="line">        <span class="keyword">for</span>( ; i &lt; arrayData-&gt;num; i++ )</span><br><span class="line">        &#123;</span><br><span class="line">            pNode = (CCNode*) arrayData-&gt;arr[i];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> ( pNode &amp;&amp; pNode-&gt;m_nZOrder &lt; <span class="number">0</span> ) </span><br><span class="line">            &#123;</span><br><span class="line">                pNode-&gt;visit();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// self draw</span></span><br><span class="line">        <span class="keyword">this</span>-&gt;draw();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>( ; i &lt; arrayData-&gt;num; i++ )</span><br><span class="line">        &#123;</span><br><span class="line">            pNode = (CCNode*) arrayData-&gt;arr[i];</span><br><span class="line">            <span class="keyword">if</span> (pNode)</span><br><span class="line">            &#123;</span><br><span class="line">                pNode-&gt;visit();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;        </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;draw();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// reset for next frame</span></span><br><span class="line">    m_uOrderOfArrival = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">if</span> (m_pGrid &amp;&amp; m_pGrid-&gt;isActive())</span><br><span class="line">     &#123;</span><br><span class="line">         m_pGrid-&gt;afterDraw(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    kmGLPopMatrix();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cocos2dx/" rel="tag"># cocos2dx</a>
+              <a href="/tags/uibutton/" rel="tag"># uibutton</a>
+              <a href="/tags/button/" rel="tag"># button</a>
+              <a href="/tags/disable/" rel="tag"># disable</a>
+              <a href="/tags/uiwidget/" rel="tag"># uiwidget</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2013/12/31/%E6%8A%80%E6%9C%AF/%5BiOS%5D%E6%98%AF%E6%80%8E%E4%B9%88%E3%80%8C%E7%BB%98%E7%94%BB%E3%80%8D%E7%9A%84?/" rel="prev" title="[iOS]是怎么「绘画」的?">
+      <i class="fa fa-chevron-left"></i> [iOS]是怎么「绘画」的?
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/03/29/%E6%8A%80%E6%9C%AF/%5Bcocos2dx%5D%E8%AE%A9CCScrollView%E6%94%AF%E6%8C%81%E5%88%86%E9%A1%B5/" rel="next" title="[cocos2dx]让CCScrollView支持分页">
+      [cocos2dx]让CCScrollView支持分页 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#发现问题"><span class="nav-number">1.</span> <span class="nav-text">发现问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方法"><span class="nav-number">2.</span> <span class="nav-text">解决方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解释"><span class="nav-number">3.</span> <span class="nav-text">解释</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Widget的诡异渲染"><span class="nav-number">3.1.</span> <span class="nav-text">Widget的诡异渲染</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Widget的enable"><span class="nav-number">3.2.</span> <span class="nav-text">Widget的enable?</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#附录"><span class="nav-number">4.</span> <span class="nav-text">附录</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#代码片段一CCNode-visit"><span class="nav-number">4.1.</span> <span class="nav-text">代码片段一CCNode::visit()</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

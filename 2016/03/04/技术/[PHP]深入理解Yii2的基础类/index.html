@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要：了解Yii2框架的基础支撑类。 ComponentComponent是Yii2框架中非常重要的一个类。它主要实现了三个方面的功能：  property: 重写了__get()和__set()方法，可以直接调用getter&#x2F;setter方法来读写属性，或者读写behaviors中的同名属性。 event:允许其他实例在Component上注册监听事件，当Component::trigger()">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[PHP]深入理解Yii2的基础类">
+<meta property="og:url" content="http://blog.bookbook.in/2016/03/04/%E6%8A%80%E6%9C%AF/[PHP]%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84%E5%9F%BA%E7%A1%80%E7%B1%BB/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要：了解Yii2框架的基础支撑类。 ComponentComponent是Yii2框架中非常重要的一个类。它主要实现了三个方面的功能：  property: 重写了__get()和__set()方法，可以直接调用getter&#x2F;setter方法来读写属性，或者读写behaviors中的同名属性。 event:允许其他实例在Component上注册监听事件，当Component::trigger()">
+<meta property="article:published_time" content="2016-03-04T01:12:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="yii2">
+<meta property="article:tag" content="component">
+<meta property="article:tag" content="action">
+<meta property="article:tag" content="filter">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bookbook.in/2016/03/04/%E6%8A%80%E6%9C%AF/[PHP]%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84%E5%9F%BA%E7%A1%80%E7%B1%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[PHP]深入理解Yii2的基础类 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2016/03/04/%E6%8A%80%E6%9C%AF/[PHP]%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84%E5%9F%BA%E7%A1%80%E7%B1%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [PHP]深入理解Yii2的基础类
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-03-04 09:12:00" itemprop="dateCreated datePublished" datetime="2016-03-04T09:12:00+08:00">2016-03-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要：了解<code>Yii2</code>框架的基础支撑类。</p>
+<h1 id="Component"><a href="#Component" class="headerlink" title="Component"></a>Component</h1><p><code>Component</code>是<code>Yii2</code>框架中非常重要的一个类。它主要实现了三个方面的功能：</p>
+<ol>
+<li><code>property</code>: 重写了<code>__get()</code>和<code>__set()</code>方法，可以直接调用<code>getter/setter</code>方法来读写属性，或者读写<code>behaviors</code>中的同名属性。</li>
+<li><code>event</code>:允许其他实例在<code>Component</code>上注册监听事件，当<code>Component::trigger()</code>被调用时，对应的回调函数会被调用。</li>
+<li><code>hehavior</code>:允许动态的为<code>Component</code>添加方法/接口。实现方式是：重写<code>__call()</code>方法，如果在<code>_behaviors</code>有同名的方法，也可以被调用。相当于扩展了<code>Component</code>的方法和属性。</li>
+</ol>
+<h2 id="Component-behaviors"><a href="#Component-behaviors" class="headerlink" title="Component::behaviors()"></a>Component::behaviors()</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Component</span></span></span><br><span class="line">    + __call():</span><br><span class="line">        <span class="keyword">$this</span>-&gt;ensureBehaivors():</span><br><span class="line">        then call;</span><br><span class="line">    + ensureBehaviors():</span><br><span class="line">        <span class="keyword">$this</span>-&gt;attachBehaviorInternal();</span><br><span class="line">        <span class="keyword">$this</span>-&gt;behaviors();</span><br></pre></td></tr></table></figure>
+
+<h1 id="Behavior"><a href="#Behavior" class="headerlink" title="Behavior"></a>Behavior</h1><p>两个功能：</p>
+<ol>
+<li>把自己的方法注入的<code>Component</code>中去，增加<code>Component</code>的功能。</li>
+<li>响应<code>$owner</code>抛发的事件，做对应的处理。</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Behavior</span></span></span><br><span class="line">    + attach($owner);</span><br><span class="line">    + detach();</span><br><span class="line">    + events();</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="ActionFilter"><a href="#ActionFilter" class="headerlink" title="ActionFilter"></a>ActionFilter</h1><p><code>ActionFilter</code>可以添加在<code>Module/Controller</code>上，监听<code>Module/Controller</code>的<code>beforeAction</code>和<code>afterAction</code>事件，做相应的处理。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class ActionFilter extends Behavior:</span><br><span class="line">    + attach($owner): <span class="comment">//当被添加到$owner上时，绑定$owner的'beforeAction'事件</span></span><br><span class="line">        $owner-&gt;on(<span class="string">'beforeAction'</span>,[<span class="keyword">$this</span>, <span class="string">'beforeFilter'</span>]);</span><br><span class="line">    + beforeFilter($event):</span><br><span class="line">        $event-&gt;isValid = <span class="keyword">$this</span>-&gt;beforeAction($event-&gt;action);</span><br><span class="line">        <span class="keyword">if</span> $event-&gt;$isValid then</span><br><span class="line">            <span class="keyword">$this</span>-&gt;owner-&gt;on(<span class="string">'afterAction'</span>,[<span class="keyword">$this</span>,<span class="string">'afterFilter'</span>]);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            $event-&gt;handled = <span class="keyword">true</span>;</span><br><span class="line">    + afterFilter($event);</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="SercieLocator"><a href="#SercieLocator" class="headerlink" title="SercieLocator"></a>SercieLocator</h1><p>ServiceLocator implements a <a href="http://en.wikipedia.org/wiki/Service_locator_pattern" target="_blank" rel="noopener">service locator</a>.</p>
+<ul>
+<li>To use ServiceLocator, you first need to register component IDs with the corresponding component definitions with the locator by calling <code>set()</code> or <code>setComponents()</code>.</li>
+<li>You can then call <code>get()</code> to retrieve a component with the specified ID. The locator will automatically instantiate and configure the component according to the definition.</li>
+</ul>
+<p><code>ServiceLocator</code>重要的方法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">class ServiceLocator:</span><br><span class="line">    + set($id,$defination); <span class="comment">//设置某个组件的定义</span></span><br><span class="line">    + get($id); <span class="comment">//如果未实例化，则根据定义新建。</span></span><br></pre></td></tr></table></figure>
+
+
+<h1 id="Controller"><a href="#Controller" class="headerlink" title="Controller"></a>Controller</h1><p>MVC的重要组成部分，相当于一个路由，没啥核心功能：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">class Controller:</span><br><span class="line">    + run($route,$params); <span class="comment">//执行Action</span></span><br><span class="line">    + renderXXX(); <span class="comment">//渲染输出结果，赋给Response</span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/yii2/" rel="tag"># yii2</a>
+              <a href="/tags/component/" rel="tag"># component</a>
+              <a href="/tags/action/" rel="tag"># action</a>
+              <a href="/tags/filter/" rel="tag"># filter</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/03/03/%E6%8A%80%E6%9C%AF/%5BPHP%5D%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84coreComponents/" rel="prev" title="[PHP]深入理解Yii2的核心组件">
+      <i class="fa fa-chevron-left"></i> [PHP]深入理解Yii2的核心组件
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/03/04/%E6%8A%80%E6%9C%AF/%5BUML%5D%E6%9E%84%E6%9E%B6%E5%B8%88%E8%A6%81%E7%86%9F%E7%BB%83%E4%BD%BF%E7%94%A8UML/" rel="next" title="[UML]构架师要熟练使用UML">
+      [UML]构架师要熟练使用UML <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Component"><span class="nav-number">1.</span> <span class="nav-text">Component</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Component-behaviors"><span class="nav-number">1.1.</span> <span class="nav-text">Component::behaviors()</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Behavior"><span class="nav-number">2.</span> <span class="nav-text">Behavior</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ActionFilter"><span class="nav-number">3.</span> <span class="nav-text">ActionFilter</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SercieLocator"><span class="nav-number">4.</span> <span class="nav-text">SercieLocator</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Controller"><span class="nav-number">5.</span> <span class="nav-text">Controller</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

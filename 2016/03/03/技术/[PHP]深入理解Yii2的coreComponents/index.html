@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要：上一篇文章中，我们了解了Appliction的生命周期大概做了哪些事情，在其中我们提到核心组件Appliction::coreComponents但未深入讲解。我将在此文中挑选一些重要的组件详细讲解。 coreComponentsApplication::coreComponents() 是一个Application运行过程中必须的component，不管用户有没有在config文件中设置，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[PHP]深入理解Yii2的核心组件">
+<meta property="og:url" content="http://blog.bookbook.in/2016/03/03/%E6%8A%80%E6%9C%AF/[PHP]%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84coreComponents/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要：上一篇文章中，我们了解了Appliction的生命周期大概做了哪些事情，在其中我们提到核心组件Appliction::coreComponents但未深入讲解。我将在此文中挑选一些重要的组件详细讲解。 coreComponentsApplication::coreComponents() 是一个Application运行过程中必须的component，不管用户有没有在config文件中设置，">
+<meta property="article:published_time" content="2016-03-03T03:12:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="php">
+<meta property="article:tag" content="yii2">
+<meta property="article:tag" content="coreComponents">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bookbook.in/2016/03/03/%E6%8A%80%E6%9C%AF/[PHP]%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84coreComponents/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[PHP]深入理解Yii2的核心组件 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2016/03/03/%E6%8A%80%E6%9C%AF/[PHP]%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84coreComponents/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [PHP]深入理解Yii2的核心组件
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-03-03 11:12:00" itemprop="dateCreated datePublished" datetime="2016-03-03T11:12:00+08:00">2016-03-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要：<a href="http://blog.bookbook.in/ji-zhu/-php-shen-ru-li-jie-yii2de-lifecycle">上一篇文章</a>中，我们了解了<code>Appliction</code>的生命周期大概做了哪些事情，在其中我们提到核心组件<code>Appliction::coreComponents</code>但未深入讲解。我将在此文中挑选一些重要的组件详细讲解。</p>
+<h1 id="coreComponents"><a href="#coreComponents" class="headerlink" title="coreComponents"></a>coreComponents</h1><p><code>Application::coreComponents()</code> 是一个<code>Application</code>运行过程中必须的<code>component</code>，不管用户有没有在<code>config</code>文件中设置，这些组件都会创建和使用。<br>所有在<code>config</code>文件中设置或者在<code>coreComponents()</code>中的组件，都不需要手动创建，通过<code>Application-&gt;get($componentId)</code>都可以自动创建。</p>
+<p><code>\yii\base\Application</code>的核心组件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">coreComponents</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> [</span><br><span class="line">        <span class="string">'log'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\log\Dispatcher'</span>],</span><br><span class="line">        <span class="string">'view'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\View'</span>],</span><br><span class="line">        <span class="string">'formatter'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\i18n\Formatter'</span>],</span><br><span class="line">        <span class="string">'i18n'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\i18n\I18N'</span>],</span><br><span class="line">        <span class="string">'mailer'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\swiftmailer\Mailer'</span>],</span><br><span class="line">        <span class="string">'urlManager'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\UrlManager'</span>],</span><br><span class="line">        <span class="string">'assetManager'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\AssetManager'</span>],</span><br><span class="line">        <span class="string">'security'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\base\Security'</span>],</span><br><span class="line">    ];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p><code>\yii\web\Application</code>的必要组件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">coreComponents</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> array_merge(<span class="keyword">parent</span>::coreComponents(), [</span><br><span class="line">        <span class="string">'request'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\Request'</span>],</span><br><span class="line">        <span class="string">'response'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\Response'</span>],</span><br><span class="line">        <span class="string">'session'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\Session'</span>],</span><br><span class="line">        <span class="string">'user'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\User'</span>],</span><br><span class="line">        <span class="string">'errorHandler'</span> =&gt; [<span class="string">'class'</span> =&gt; <span class="string">'yii\web\ErrorHandler'</span>],</span><br><span class="line">    ]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>下文，我们将对<code>view,urlManager,assetManager,security,request,response,session,user</code>这几个组件做详细讲解。</p>
+<h1 id="yii-web-Request"><a href="#yii-web-Request" class="headerlink" title="yii\web\Request"></a>yii\web\Request</h1><p><code>Request</code>代表着一次HTTP请求，它封装了<code>$_SERVER</code>的大多数变量，并且对不同平台的浏览器做了兼容处理。同时，它还封装了一些方便的访问接口来访问诸如<code>$_POST</code>，<code>$_GET</code>，<code>$_COOKIES</code>，<code>_REST</code>的参数。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Request</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    validateCsrfToken($token); <span class="comment">//验证csrf码是否合法。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="关于CSRF验证"><a href="#关于CSRF验证" class="headerlink" title="关于CSRF验证"></a>关于CSRF验证</h2><p>服务器在接受一次请求，都会向前端发送两个字符串：一个在返回的HTML的<code>head</code>中；另一个在cookie中。这两个字符串是互相匹配的，可通过某种算法得到另一个。当用户发送非安全的请求时，需要在请求中把head中的那个字符串附带上，这样，服务器会判断这两个字符串是否匹配。</p>
+<h2 id="Component-behaviors"><a href="#Component-behaviors" class="headerlink" title="Component::behaviors()"></a>Component::behaviors()</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Component</span></span></span><br><span class="line">    + __call() / </span><br><span class="line">        + <span class="keyword">$this</span>-&gt;ensureBehaivors();</span><br><span class="line">            + <span class="keyword">$this</span>-&gt;attachBehaviorInternal();</span><br><span class="line">            + <span class="keyword">$this</span>-&gt;behaviors();</span><br></pre></td></tr></table></figure>
+
+<h2 id="ActionFilter"><a href="#ActionFilter" class="headerlink" title="ActionFilter"></a>ActionFilter</h2><p><code>ActionFilter</code>可以添加在<code>Module/Controller</code>上，监听<code>Module/Controller</code>的<code>beforeAction</code>和<code>afterAction</code>事件，做相应的处理。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class ActionFilter:</span><br><span class="line">    + attach($owner): <span class="comment">//当被添加到$owner上时，绑定$owner的'beforeAction'事件</span></span><br><span class="line">        $owner-&gt;on(<span class="string">'beforeAction'</span>,[<span class="keyword">$this</span>, <span class="string">'beforeFilter'</span>]);</span><br><span class="line">    + beforeFilter($event):</span><br><span class="line">        $event-&gt;isValid = <span class="keyword">$this</span>-&gt;beforeAction($event-&gt;action);</span><br><span class="line">        <span class="keyword">if</span> $event-&gt;$isValid then</span><br><span class="line">            <span class="keyword">$this</span>-&gt;owner-&gt;on(<span class="string">'afterAction'</span>,[<span class="keyword">$this</span>,<span class="string">'afterFilter'</span>]);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            $event-&gt;handled = <span class="keyword">true</span>;</span><br><span class="line">    + afterFilter($event);</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="yii-web-Session"><a href="#yii-web-Session" class="headerlink" title="yii\web\Session"></a>yii\web\Session</h1><h1 id="yii-web-User"><a href="#yii-web-User" class="headerlink" title="\yii\web\User"></a>\yii\web\User</h1><p><code>\yii\web\User</code>是用来处理用户验证和用户登录状态的类。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//定义：</span></span><br><span class="line">class User:</span><br><span class="line">    + login(); <span class="comment">//调用switchIdentify()，抛发一系列事件。</span></span><br><span class="line">    + loginByAccessToken($token,$type); <span class="comment">//如果findIdentityByAccessToken()成功，则login()</span></span><br><span class="line">    + loginByCookie(); <span class="comment">//如果Cookie中，id+authKey+duration都能对的上，则登陆成功，调用switchIdentify()</span></span><br><span class="line">    + switchIdentify(); <span class="comment">//setIdentify()，然后设置session和cookie</span></span><br><span class="line"></span><br><span class="line">    + renewAuthStatus(); <span class="comment">//根据SessionId获得Identify。如果已经过期，则logout()；如果enableAutoLogin，则loginByCookie()；如果autoRenewCookie，则renewIdentifyCookie()。</span></span><br><span class="line">    + renewIdentityCookie(); <span class="comment">//更新Cookie的过期时间为从当前开始。</span></span><br><span class="line">    + getIdentify($autoRenew = <span class="keyword">true</span>); <span class="comment">//if $enableSession &amp;&amp; $autoRenew then renewAuthStatus(). 最终返回Identify.</span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/php/" rel="tag"># php</a>
+              <a href="/tags/yii2/" rel="tag"># yii2</a>
+              <a href="/tags/coreComponents/" rel="tag"># coreComponents</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/03/02/%E6%8A%80%E6%9C%AF/%5BPHP%5D%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84lifecycle/" rel="prev" title="[PHP]深入理解Yii2的生命周期">
+      <i class="fa fa-chevron-left"></i> [PHP]深入理解Yii2的生命周期
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/03/04/%E6%8A%80%E6%9C%AF/%5BPHP%5D%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Yii2%E7%9A%84%E5%9F%BA%E7%A1%80%E7%B1%BB/" rel="next" title="[PHP]深入理解Yii2的基础类">
+      [PHP]深入理解Yii2的基础类 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#coreComponents"><span class="nav-number">1.</span> <span class="nav-text">coreComponents</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#yii-web-Request"><span class="nav-number">2.</span> <span class="nav-text">yii\web\Request</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#关于CSRF验证"><span class="nav-number">2.1.</span> <span class="nav-text">关于CSRF验证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Component-behaviors"><span class="nav-number">2.2.</span> <span class="nav-text">Component::behaviors()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ActionFilter"><span class="nav-number">2.3.</span> <span class="nav-text">ActionFilter</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#yii-web-Session"><span class="nav-number">3.</span> <span class="nav-text">yii\web\Session</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#yii-web-User"><span class="nav-number">4.</span> <span class="nav-text">\yii\web\User</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

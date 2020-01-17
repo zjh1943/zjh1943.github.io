@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要: 此文对cocos2d-x引擎中最具代表性,最能体现框架结构的几个类做了简单的介绍, 包括Director,Application, Renderer, EventDispatcher, Scheduler. 对于这些类, 也只对关系主要流程的方法做了介绍, 略过了容错代码和其它细节. 主要目的是让大家快速的对cocos2d-x引擎有一个全面笼统的认识, 也方便快速定位问题.  GLView">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[cocos2dx]深入了解几个代表性的类">
+<meta property="og:url" content="http://blog.bookbook.in/2014/07/22/%E6%8A%80%E6%9C%AF/[cocos2dx]%E6%B7%B1%E5%85%A5--%E5%87%A0%E4%B8%AA%E4%BB%A3%E8%A1%A8%E6%80%A7%E7%9A%84%E7%B1%BB/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要: 此文对cocos2d-x引擎中最具代表性,最能体现框架结构的几个类做了简单的介绍, 包括Director,Application, Renderer, EventDispatcher, Scheduler. 对于这些类, 也只对关系主要流程的方法做了介绍, 略过了容错代码和其它细节. 主要目的是让大家快速的对cocos2d-x引擎有一个全面笼统的认识, 也方便快速定位问题.  GLView">
+<meta property="article:published_time" content="2014-07-21T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="cocos2dx">
+<meta property="article:tag" content="openGL">
+<meta property="article:tag" content="GLView">
+<meta property="article:tag" content="Application">
+<meta property="article:tag" content="Director">
+<meta property="article:tag" content="class">
+<meta property="article:tag" content="Renderer">
+<meta property="article:tag" content="Node">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bookbook.in/2014/07/22/%E6%8A%80%E6%9C%AF/[cocos2dx]%E6%B7%B1%E5%85%A5--%E5%87%A0%E4%B8%AA%E4%BB%A3%E8%A1%A8%E6%80%A7%E7%9A%84%E7%B1%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[cocos2dx]深入了解几个代表性的类 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2014/07/22/%E6%8A%80%E6%9C%AF/[cocos2dx]%E6%B7%B1%E5%85%A5--%E5%87%A0%E4%B8%AA%E4%BB%A3%E8%A1%A8%E6%80%A7%E7%9A%84%E7%B1%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [cocos2dx]深入了解几个代表性的类
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2014-07-22 00:00:00" itemprop="dateCreated datePublished" datetime="2014-07-22T00:00:00+08:00">2014-07-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要: 此文对<code>cocos2d-x</code>引擎中最具代表性,最能体现框架结构的几个类做了简单的介绍, 包括<code>Director</code>,<code>Application</code>, <code>Renderer</code>, <code>EventDispatcher</code>, <code>Scheduler</code>. 对于这些类, 也只对关系主要流程的方法做了介绍, 略过了容错代码和其它细节. 主要目的是让大家快速的对<code>cocos2d-x</code>引擎有一个全面笼统的认识, 也方便快速定位问题.</p>
+<hr>
+<h2 id="GLView"><a href="#GLView" class="headerlink" title="GLView"></a>GLView</h2><p><code>cocos2d-x</code>对<code>openGL</code>的封装. 不同平台下, <code>openGL</code>有一些差别.</p>
+<h3 id="openGL"><a href="#openGL" class="headerlink" title="openGL"></a>openGL</h3><h4 id="一段简单的例子"><a href="#一段简单的例子" class="headerlink" title="一段简单的例子"></a>一段简单的例子</h4><p>以下内容引用自<a href="http://www.glprogramming.com/red/chapter01.html" target="_blank" rel="noopener">Introduction to OpenGL</a>. 需要更具体的介绍也可参考这个链接.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"># include &lt;whateverYouNeed.h&gt;</span><br><span class="line">main() &#123;</span><br><span class="line">   InitializeAWindowPlease();</span><br><span class="line">   </span><br><span class="line">   glClearColor (0.0, 0.0, 0.0, 0.0);</span><br><span class="line">   glClear (GL_COLOR_BUFFER_BIT);</span><br><span class="line">   </span><br><span class="line">   glColor3f (1.0, 1.0, 1.0);</span><br><span class="line">   glOrtho(0.0, 1.0, 0.0, 1.0, -1.0, 1.0);</span><br><span class="line">   glBegin(GL_POLYGON);</span><br><span class="line">      glVertex3f (0.25, 0.25, 0.0);</span><br><span class="line">      glVertex3f (0.75, 0.25, 0.0);</span><br><span class="line">      glVertex3f (0.75, 0.75, 0.0);</span><br><span class="line">      glVertex3f (0.25, 0.75, 0.0);</span><br><span class="line">   glEnd();</span><br><span class="line">   glFlush();</span><br><span class="line">   </span><br><span class="line">   UpdateTheWindowAndCheckForEvents();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="OpenGL-Command-Syntax"><a href="#OpenGL-Command-Syntax" class="headerlink" title="OpenGL Command Syntax"></a>OpenGL Command Syntax</h4><ul>
+<li>OpenGL commands use the prefix <code>gl</code> and initial capital letters for each word making up the command name </li>
+<li>some seemingly extraneous letters appended to some command names (for example, the <code>3f</code> in <code>glColor3f()</code> and <code>glVertex3f()</code>)</li>
+</ul>
+<h4 id="OpenGL-as-a-State-Machine"><a href="#OpenGL-as-a-State-Machine" class="headerlink" title="OpenGL as a State Machine"></a>OpenGL as a State Machine</h4><p>OpenGL is a state machine. You put it into various states (or modes) that then remain in effect until you change them.</p>
+<h2 id="Application"><a href="#Application" class="headerlink" title="Application"></a>Application</h2><h3 id="主要方法"><a href="#主要方法" class="headerlink" title="主要方法:"></a>主要方法:</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">virtual const char * getCurrentLanguage();</span><br><span class="line">virtual Platform getTargetPlatform();</span><br><span class="line">virtual void setAnimationInterval(double interval);</span><br><span class="line">int run();&#x2F;&#x2F;启动主循环</span><br></pre></td></tr></table></figure>
+<h3 id="run-函数"><a href="#run-函数" class="headerlink" title="run()函数"></a>run()函数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">int Application::run()</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    while(!glview-&gt;windowShouldClose())</span><br><span class="line">    &#123;</span><br><span class="line">        QueryPerformanceCounter(&amp;nNow);</span><br><span class="line">        if (nNow.QuadPart - nLast.QuadPart &gt; _animationInterval.QuadPart)</span><br><span class="line">        &#123;</span><br><span class="line">            nLast.QuadPart &#x3D; nNow.QuadPart;</span><br><span class="line">            </span><br><span class="line">            director-&gt;mainLoop();       &#x2F;&#x2F;Director进行这一帧的渲染</span><br><span class="line">            glview-&gt;pollEvents();       &#x2F;&#x2F; This function processes only those events that have already been received and then returns immediately.</span><br><span class="line">        &#125;</span><br><span class="line">        else</span><br><span class="line">        &#123;</span><br><span class="line">            Sleep(0);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    return true;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Director"><a href="#Director" class="headerlink" title="Director"></a>Director</h2><h3 id="主要函数预览"><a href="#主要函数预览" class="headerlink" title="主要函数预览"></a>主要函数预览</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;openGL Matrix Operate</span><br><span class="line">    void pushMatrix(MATRIX_STACK_TYPE type);</span><br><span class="line">    void popMatrix(MATRIX_STACK_TYPE type);</span><br><span class="line">    void loadIdentityMatrix(MATRIX_STACK_TYPE type);</span><br><span class="line">    void loadMatrix(MATRIX_STACK_TYPE type, const Mat4&amp; mat);</span><br><span class="line">    void multiplyMatrix(MATRIX_STACK_TYPE type, const Mat4&amp; mat);</span><br><span class="line">    Mat4 getMatrix(MATRIX_STACK_TYPE type);</span><br><span class="line">    void resetMatrixStack();</span><br><span class="line">    </span><br><span class="line">&#x2F;&#x2F;View Data</span><br><span class="line">    inline double getAnimationInterval();</span><br><span class="line">    inline bool isDisplayStats();</span><br><span class="line">    inline GLView* getOpenGLView();</span><br><span class="line">    inline Projection getProjection();</span><br><span class="line">    Size getVisibleSize() const;</span><br><span class="line">    </span><br><span class="line">    Vec2 getVisibleOrigin() const;</span><br><span class="line">    Vec2 convertToGL(const Vec2&amp; point);</span><br><span class="line">    Vec2 convertToUI(const Vec2&amp; point);</span><br><span class="line">    float getZEye() const;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; Scene 场景管理</span><br><span class="line">    inline Scene* getRunningScene();</span><br><span class="line">    void runWithScene(Scene *scene);</span><br><span class="line">    void pushScene(Scene *scene);</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">&#x2F;&#x2F; 控制绘制的暂停和恢复</span><br><span class="line">    void end();</span><br><span class="line">    void pause();</span><br><span class="line">    void resume();</span><br><span class="line">    </span><br><span class="line">&#x2F;&#x2F;绘制图形(界面展示最重要的函数)</span><br><span class="line">    void drawScene();</span><br><span class="line">    </span><br><span class="line">&#x2F;&#x2F;Getter and Setter</span><br><span class="line">    Scheduler* getScheduler() const &#123; return _scheduler; &#125;</span><br><span class="line">    void setScheduler(Scheduler* scheduler);</span><br><span class="line"></span><br><span class="line">    ActionManager* getActionManager() const &#123; return _actionManager; &#125;</span><br><span class="line">    void setActionManager(ActionManager* actionManager);</span><br><span class="line">    </span><br><span class="line">    EventDispatcher* getEventDispatcher() const &#123; return _eventDispatcher; &#125;</span><br><span class="line">    void setEventDispatcher(EventDispatcher* dispatcher);</span><br><span class="line"></span><br><span class="line">    Renderer* getRenderer() const &#123; return _renderer; &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="drawScene-主要绘制函数"><a href="#drawScene-主要绘制函数" class="headerlink" title="drawScene(): 主要绘制函数"></a>drawScene(): 主要绘制函数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; Draw the Scene</span><br><span class="line">void Director::drawScene()</span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    if (! _paused)</span><br><span class="line">    &#123;</span><br><span class="line">        _scheduler-&gt;update(_deltaTime);                         &#x2F;&#x2F;Scheduler 定时器 更新</span><br><span class="line">        _eventDispatcher-&gt;dispatchEvent(_eventAfterUpdate);     &#x2F;&#x2F;Dispatcher 抛发事件.</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);         &#x2F;&#x2F;glClear</span><br><span class="line"></span><br><span class="line">    if (_nextScene)                                             &#x2F;&#x2F;取得下一个将要显示的Scene.</span><br><span class="line">    &#123;</span><br><span class="line">        setNextScene();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);      &#x2F;&#x2F;将上一次绘制的Context放到堆栈</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; draw the scene</span><br><span class="line">    if (_runningScene)</span><br><span class="line">    &#123;</span><br><span class="line">        _runningScene-&gt;visit(_renderer, Mat4::IDENTITY, false);</span><br><span class="line">        _eventDispatcher-&gt;dispatchEvent(_eventAfterVisit);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    _renderer-&gt;render();                                        &#x2F;&#x2F;渲染</span><br><span class="line">    _eventDispatcher-&gt;dispatchEvent(_eventAfterDraw);</span><br><span class="line"></span><br><span class="line">    popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);       &#x2F;&#x2F;返回到上一次绘制时的状态.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; swap buffers</span><br><span class="line">    if (_openGLView)</span><br><span class="line">    &#123;</span><br><span class="line">        _openGLView-&gt;swapBuffers();                             &#x2F;&#x2F;把上面渲染的结果显示到屏幕</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Node-visit-函数"><a href="#Node-visit-函数" class="headerlink" title="Node::visit() 函数"></a>Node::visit() 函数</h2><h3 id="预览"><a href="#预览" class="headerlink" title="预览"></a>预览</h3><p>Node::visit() 的主要功能就是</p>
+<ol>
+<li>调用所有孩子的<code>visit</code>函数</li>
+<li>调用<code>self-&gt;draw()</code>函数<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">void Node::visit(Renderer* renderer, const Mat4 &amp;parentTransform, uint32_t parentFlags)</span><br><span class="line">&#123;</span><br><span class="line">    &#x2F;&#x2F; quick return if not visible. children won&#39;t be drawn.</span><br><span class="line">    if (!_visible)</span><br><span class="line">    &#123;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    uint32_t flags &#x3D; processParentFlags(parentTransform, parentFlags);</span><br><span class="line"></span><br><span class="line">    &#x2F;&#x2F; IMPORTANT:</span><br><span class="line">    &#x2F;&#x2F; To ease the migration to v3.0, we still support the Mat4 stack,</span><br><span class="line">    &#x2F;&#x2F; but it is deprecated and your code should not rely on it</span><br><span class="line">    Director* director &#x3D; Director::getInstance();</span><br><span class="line">    director-&gt;pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);</span><br><span class="line">    director-&gt;loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);</span><br><span class="line"></span><br><span class="line">    int i &#x3D; 0;</span><br><span class="line"></span><br><span class="line">   </span><br><span class="line">    if(!_children.empty())</span><br><span class="line">    &#123;</span><br><span class="line">        sortAllChildren();</span><br><span class="line">        &#x2F;&#x2F; draw children zOrder &lt; 0</span><br><span class="line">        for( ; i &lt; _children.size(); i++ )</span><br><span class="line">        &#123;</span><br><span class="line">            auto node &#x3D; _children.at(i);</span><br><span class="line"></span><br><span class="line">            if ( node &amp;&amp; node-&gt;_localZOrder &lt; 0 )</span><br><span class="line">                node-&gt;visit(renderer, _modelViewTransform, flags);</span><br><span class="line">            else</span><br><span class="line">                break;</span><br><span class="line">        &#125;</span><br><span class="line">        &#x2F;&#x2F; self draw</span><br><span class="line">        this-&gt;draw(renderer, _modelViewTransform, flags);</span><br><span class="line"></span><br><span class="line">        for(auto it&#x3D;_children.cbegin()+i; it !&#x3D; _children.cend(); ++it)</span><br><span class="line">            (*it)-&gt;visit(renderer, _modelViewTransform, flags);</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        this-&gt;draw(renderer, _modelViewTransform, flags);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    director-&gt;popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h3 id="Node-draw"><a href="#Node-draw" class="headerlink" title="Node::draw()"></a>Node::draw()</h3><p>因为<code>Node</code>是所有可显示对象的父类, 没有任何显示内容, 所以<code>draw</code>函数为空.<br>这里我们以<code>Sprite::draw</code>函数为例简单介绍下<code>draw</code>的作用.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">void Sprite::draw(Renderer *renderer, const Mat4 &amp;transform, uint32_t flags)</span><br><span class="line">&#123;</span><br><span class="line">    &#x2F;&#x2F; Don&#39;t do calculate the culling if the transform was not updated</span><br><span class="line">    _insideBounds &#x3D; (flags &amp; FLAGS_TRANSFORM_DIRTY) ? renderer-&gt;checkVisibility(transform, _contentSize) : _insideBounds;</span><br><span class="line"></span><br><span class="line">    if(_insideBounds)</span><br><span class="line">    &#123;</span><br><span class="line">        _quadCommand.init(_globalZOrder, _texture-&gt;getName(), getGLProgramState(), _blendFunc, &amp;_quad, 1, transform);</span><br><span class="line">        renderer-&gt;addCommand(&amp;_quadCommand);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们看到, <code>Sprite::draw</code>函数主要实现了[添加一个<code>QuadCommand</code>到<code>Render</code>中去]的功能.<br>再看看<code>Label</code>的绘制函数.</p>
+<h3 id="Label-draw"><a href="#Label-draw" class="headerlink" title="Label::draw"></a>Label::draw</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">void Label::draw(Renderer *renderer, const Mat4 &amp;transform, uint32_t flags)</span><br><span class="line">&#123;</span><br><span class="line">    &#x2F;&#x2F; Don&#39;t do calculate the culling if the transform was not updated</span><br><span class="line">    _insideBounds &#x3D; (flags &amp; FLAGS_TRANSFORM_DIRTY) ? renderer-&gt;checkVisibility(transform, _contentSize) : _insideBounds;</span><br><span class="line"></span><br><span class="line">    if(_insideBounds) &#123;</span><br><span class="line">        _customCommand.init(_globalZOrder);</span><br><span class="line">        _customCommand.func &#x3D; CC_CALLBACK_0(Label::onDraw, this, transform, flags);</span><br><span class="line">        renderer-&gt;addCommand(&amp;_customCommand);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其实, 跟<code>Sprite::draw</code>也差不多. 关键在于这个<code>RenderCommand</code>怎么构造和执行的.</p>
+<h2 id="Renderer-渲染器"><a href="#Renderer-渲染器" class="headerlink" title="Renderer 渲染器"></a>Renderer 渲染器</h2><h3 id="主要函数预览-1"><a href="#主要函数预览-1" class="headerlink" title="主要函数预览"></a>主要函数预览</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">void initGLView();</span><br><span class="line"></span><br><span class="line">&#x2F;** Adds a &#96;RenderComamnd&#96; into the renderer *&#x2F;</span><br><span class="line">void addCommand(RenderCommand* command);</span><br><span class="line"></span><br><span class="line">&#x2F;** Adds a &#96;RenderComamnd&#96; into the renderer specifying a particular render queue ID *&#x2F;</span><br><span class="line">void addCommand(RenderCommand* command, int renderQueue);</span><br><span class="line"></span><br><span class="line">&#x2F;** Pushes a group into the render queue *&#x2F;</span><br><span class="line">void pushGroup(int renderQueueID);</span><br><span class="line"></span><br><span class="line">&#x2F;** Pops a group from the render queue *&#x2F;</span><br><span class="line">void popGroup();</span><br><span class="line"></span><br><span class="line">&#x2F;** Creates a render queue and returns its Id *&#x2F;</span><br><span class="line">int createRenderQueue();</span><br><span class="line"></span><br><span class="line">&#x2F;** Renders into the GLView all the queued &#96;RenderCommand&#96; objects *&#x2F;</span><br><span class="line">void render();</span><br></pre></td></tr></table></figure>
+<p>可见它主要由两个功能:</p>
+<ol>
+<li>对<code>ReanderCommand</code>进行排序和分类管理</li>
+<li>进行渲染:<code>render()</code></li>
+</ol>
+<h3 id="渲染函数Renderer-render"><a href="#渲染函数Renderer-render" class="headerlink" title="渲染函数Renderer::render()"></a>渲染函数Renderer::render()</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">void Renderer::render()</span><br><span class="line">&#123;</span><br><span class="line">   ...</span><br><span class="line">    </span><br><span class="line">    if (_glViewAssigned)</span><br><span class="line">    &#123;</span><br><span class="line">       ...</span><br><span class="line">        &#x2F;&#x2F;排列渲染队列</span><br><span class="line">        for (auto &amp;renderqueue : _renderGroups)</span><br><span class="line">        &#123;</span><br><span class="line">            renderqueue.sort();</span><br><span class="line">        &#125; </span><br><span class="line">        &#x2F;&#x2F;进行渲染</span><br><span class="line">        visitRenderQueue(_renderGroups[0]);</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Renderer-visitRenderQueue"><a href="#Renderer-visitRenderQueue" class="headerlink" title="Renderer::visitRenderQueue"></a>Renderer::visitRenderQueue</h3><p>按照顺序执行所有的 <code>RenderCommand</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">void Renderer::visitRenderQueue(const RenderQueue&amp; queue)</span><br><span class="line">&#123;</span><br><span class="line">    ssize_t size &#x3D; queue.size();</span><br><span class="line">    </span><br><span class="line">    for (ssize_t index &#x3D; 0; index &lt; size; ++index)</span><br><span class="line">    &#123;</span><br><span class="line">        auto command &#x3D; queue[index];</span><br><span class="line">        auto commandType &#x3D; command-&gt;getType();</span><br><span class="line">        if(RenderCommand::Type::QUAD_COMMAND &#x3D;&#x3D; commandType)</span><br><span class="line">        &#123;</span><br><span class="line">            auto cmd &#x3D; static_cast&lt;QuadCommand*&gt;(command);</span><br><span class="line">            &#x2F;&#x2F;Batch quads</span><br><span class="line">            if(_numQuads + cmd-&gt;getQuadCount() &gt; VBO_SIZE)</span><br><span class="line">            &#123;</span><br><span class="line">                drawBatchedQuads();</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            _batchedQuadCommands.push_back(cmd);</span><br><span class="line">            </span><br><span class="line">            memcpy(_quads + _numQuads, cmd-&gt;getQuads(), sizeof(V3F_C4B_T2F_Quad) * cmd-&gt;getQuadCount());</span><br><span class="line">            convertToWorldCoordinates(_quads + _numQuads, cmd-&gt;getQuadCount(), cmd-&gt;getModelView());</span><br><span class="line">            </span><br><span class="line">            _numQuads +&#x3D; cmd-&gt;getQuadCount();</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        else if(RenderCommand::Type::GROUP_COMMAND &#x3D;&#x3D; commandType)</span><br><span class="line">        &#123;</span><br><span class="line">            flush();</span><br><span class="line">            int renderQueueID &#x3D; ((GroupCommand*) command)-&gt;getRenderQueueID();</span><br><span class="line">            visitRenderQueue(_renderGroups[renderQueueID]);</span><br><span class="line">        &#125;</span><br><span class="line">        else if(RenderCommand::Type::CUSTOM_COMMAND &#x3D;&#x3D; commandType)</span><br><span class="line">        &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="openGL-VAO-VBO-介绍"><a href="#openGL-VAO-VBO-介绍" class="headerlink" title="openGL VAO, VBO 介绍."></a>openGL VAO, VBO 介绍.</h3><p><a href="http://blog.csdn.net/xiajun07061225/article/details/7628146" target="_blank" rel="noopener">GLSL渲染语言入门与VBO、VAO使用：绘制一个三角形</a><br><a href="http://blog.csdn.net/zhuyingqingfen/article/details/19238651" target="_blank" rel="noopener">OpenGL 4.0 VAO VBO 理解</a></p>
+<h2 id="Schelduler介绍"><a href="#Schelduler介绍" class="headerlink" title="Schelduler介绍"></a>Schelduler介绍</h2><p><code>Schelduler</code>是<code>cocos2d-x</code>中实现延迟调用,定时调用时最重要的功能. 类似于其他语言中的<code>Timer</code><br>他最核心的函数就是:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void schedule(const ccSchedulerFunc&amp; callback, void *target, float interval, unsigned int repeat, float delay, bool paused, const std::string&amp; key);</span><br></pre></td></tr></table></figure>
+
+<p>用来启动一个定时操作: 在延迟<code>delay</code>时间后, 每隔<code>repeat</code>时间, 调用一次<code>callback</code>. <code>target</code>用来标记这个操作属于谁, 方便管理, 比如在析构的时候调用<code>void unschedule(void *target)</code>即可移除当前对象的所有<code>定时操作</code>.</p>
+<p><code>Schelduler</code>的其它大部分方法, 要么是它的衍生, 为了减少调用参数; 要么是对<code>定时操作</code>的控制, 比如暂停, 恢复, 移除等. 如果只对想对框架的各个模块有大概的了解, 可以不做深入.</p>
+<h2 id="EventDispatcher"><a href="#EventDispatcher" class="headerlink" title="EventDispatcher"></a>EventDispatcher</h2><p>(后续添加)</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cocos2dx/" rel="tag"># cocos2dx</a>
+              <a href="/tags/openGL/" rel="tag"># openGL</a>
+              <a href="/tags/GLView/" rel="tag"># GLView</a>
+              <a href="/tags/Application/" rel="tag"># Application</a>
+              <a href="/tags/Director/" rel="tag"># Director</a>
+              <a href="/tags/class/" rel="tag"># class</a>
+              <a href="/tags/Renderer/" rel="tag"># Renderer</a>
+              <a href="/tags/Node/" rel="tag"># Node</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/06/20/%E6%8A%80%E6%9C%AF/%5Bcocos2dx%5D%E5%88%A9%E7%94%A8NDK%E5%B4%A9%E6%BA%83%E6%97%A5%E5%BF%97%E6%9F%A5%E6%89%BEBUG/" rel="prev" title="[cocos2dx]利用NDK崩溃日志查找BUG">
+      <i class="fa fa-chevron-left"></i> [cocos2dx]利用NDK崩溃日志查找BUG
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/07/22/%E6%8A%80%E6%9C%AF/%5Bcocos2dx%5D%E6%B7%B1%E5%85%A5--%E5%87%A0%E4%B8%AA%E4%BB%A3%E8%A1%A8%E6%80%A7%E7%9A%84%E7%B1%BB%20(%E7%BB%AD)/" rel="next" title="[cocos2dx]深入了解几个代表性的类 (续)">
+      [cocos2dx]深入了解几个代表性的类 (续) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#GLView"><span class="nav-number">1.</span> <span class="nav-text">GLView</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#openGL"><span class="nav-number">1.1.</span> <span class="nav-text">openGL</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#一段简单的例子"><span class="nav-number">1.1.1.</span> <span class="nav-text">一段简单的例子</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#OpenGL-Command-Syntax"><span class="nav-number">1.1.2.</span> <span class="nav-text">OpenGL Command Syntax</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#OpenGL-as-a-State-Machine"><span class="nav-number">1.1.3.</span> <span class="nav-text">OpenGL as a State Machine</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Application"><span class="nav-number">2.</span> <span class="nav-text">Application</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#主要方法"><span class="nav-number">2.1.</span> <span class="nav-text">主要方法:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#run-函数"><span class="nav-number">2.2.</span> <span class="nav-text">run()函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Director"><span class="nav-number">3.</span> <span class="nav-text">Director</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#主要函数预览"><span class="nav-number">3.1.</span> <span class="nav-text">主要函数预览</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#drawScene-主要绘制函数"><span class="nav-number">3.2.</span> <span class="nav-text">drawScene(): 主要绘制函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Node-visit-函数"><span class="nav-number">4.</span> <span class="nav-text">Node::visit() 函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#预览"><span class="nav-number">4.1.</span> <span class="nav-text">预览</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Node-draw"><span class="nav-number">4.2.</span> <span class="nav-text">Node::draw()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Label-draw"><span class="nav-number">4.3.</span> <span class="nav-text">Label::draw</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Renderer-渲染器"><span class="nav-number">5.</span> <span class="nav-text">Renderer 渲染器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#主要函数预览-1"><span class="nav-number">5.1.</span> <span class="nav-text">主要函数预览</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#渲染函数Renderer-render"><span class="nav-number">5.2.</span> <span class="nav-text">渲染函数Renderer::render()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Renderer-visitRenderQueue"><span class="nav-number">5.3.</span> <span class="nav-text">Renderer::visitRenderQueue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#openGL-VAO-VBO-介绍"><span class="nav-number">5.4.</span> <span class="nav-text">openGL VAO, VBO 介绍.</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Schelduler介绍"><span class="nav-number">6.</span> <span class="nav-text">Schelduler介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EventDispatcher"><span class="nav-number">7.</span> <span class="nav-text">EventDispatcher</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

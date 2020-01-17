@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要: cocos2dx 是一款优秀的多平台,专为2D游戏设计的引擎. 在活跃的开源社区的推进下, 越发稳定和强大. 2.x -&gt; 3.x的更新幅度很大, 性能的提升和功能的丰富也非常明显. 但在享受进步的同时,也要承受迁徙之苦. 本文主要是总结自己迁徙的经历, 以防大家走弯路.  基础准备 我一直把VS当作主开发环境, eclipse和xcode作为特定机型的调试环境. 所以, 偷个懒,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[cocos2dx]2.2到3.1(3.0)升级帮助">
+<meta property="og:url" content="http://blog.bookbook.in/2014/07/22/%E6%8A%80%E6%9C%AF/[cocos2dx]2.2%E5%88%B03.1(3.0)%E5%8D%87%E7%BA%A7%E5%B8%AE%E5%8A%A9/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要: cocos2dx 是一款优秀的多平台,专为2D游戏设计的引擎. 在活跃的开源社区的推进下, 越发稳定和强大. 2.x -&gt; 3.x的更新幅度很大, 性能的提升和功能的丰富也非常明显. 但在享受进步的同时,也要承受迁徙之苦. 本文主要是总结自己迁徙的经历, 以防大家走弯路.  基础准备 我一直把VS当作主开发环境, eclipse和xcode作为特定机型的调试环境. 所以, 偷个懒,">
+<meta property="og:image" content="http://blog.bookbook.in/2014/07/22/%E6%8A%80%E6%9C%AF/[cocos2dx]2.2%E5%88%B03.1(3.0)%E5%8D%87%E7%BA%A7%E5%B8%AE%E5%8A%A9/o_Image.png">
+<meta property="og:image" content="http://blog.bookbook.in/2014/07/22/%E6%8A%80%E6%9C%AF/[cocos2dx]2.2%E5%88%B03.1(3.0)%E5%8D%87%E7%BA%A7%E5%B8%AE%E5%8A%A9/o_Untitled%20Diagram.png">
+<meta property="article:published_time" content="2014-07-21T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="cocos2dx">
+<meta property="article:tag" content="cocos2dx-3.x">
+<meta property="article:tag" content="anchorPoint">
+<meta property="article:tag" content="vector">
+<meta property="article:tag" content="Sprite">
+<meta property="article:tag" content="GLProgram">
+<meta property="article:tag" content="Armature">
+<meta property="article:tag" content="UILayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://blog.bookbook.in/2014/07/22/%E6%8A%80%E6%9C%AF/[cocos2dx]2.2%E5%88%B03.1(3.0)%E5%8D%87%E7%BA%A7%E5%B8%AE%E5%8A%A9/o_Image.png">
+
+<link rel="canonical" href="http://blog.bookbook.in/2014/07/22/%E6%8A%80%E6%9C%AF/[cocos2dx]2.2%E5%88%B03.1(3.0)%E5%8D%87%E7%BA%A7%E5%B8%AE%E5%8A%A9/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[cocos2dx]2.2到3.1(3.0)升级帮助 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2014/07/22/%E6%8A%80%E6%9C%AF/[cocos2dx]2.2%E5%88%B03.1(3.0)%E5%8D%87%E7%BA%A7%E5%B8%AE%E5%8A%A9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [cocos2dx]2.2到3.1(3.0)升级帮助
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2014-07-22 00:00:00" itemprop="dateCreated datePublished" datetime="2014-07-22T00:00:00+08:00">2014-07-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要: cocos2dx 是一款<strong>优秀的多平台,专为2D游戏设计的引擎</strong>. 在活跃的开源社区的推进下, 越发稳定和强大. 2.x -&gt; 3.x的更新幅度很大, 性能的提升和功能的丰富也非常明显. 但在享受<strong>进步</strong>的同时,也要承受<strong>迁徙</strong>之苦. 本文主要是总结自己迁徙的经历, 以防大家走弯路.</p>
+<hr>
+<h2 id="基础准备"><a href="#基础准备" class="headerlink" title="基础准备"></a>基础准备</h2><ol>
+<li>我一直把VS当作主开发环境, eclipse和xcode作为特定机型的调试环境. 所以, 偷个懒, <strong>假设你也在用VS开发</strong>. 另外两个平台也也都有<a href="http://zh.wikipedia.org/zh-hant/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F" target="_blank" rel="noopener">正则表达式</a>替换功能, 大同小异.</li>
+<li>在这里, <strong>假设你已经搭好了3.x的VS开发环境</strong>, 能正常运行<code>HelloWorld</code>演示.</li>
+<li><strong>假设你有一定的正则表达式基础</strong>. 如果没有的话, 可参考这篇速成教程:<a href="http://deerchao.net/tutorials/regex/regex.htm" target="_blank" rel="noopener">正则表达式30分钟入门教程</a></li>
+</ol>
+<h2 id="进入正题"><a href="#进入正题" class="headerlink" title="进入正题"></a>进入正题</h2><p>cocos2dx 3.1的简要feature更新介绍可参考<a href="https://github.com/cocos2d/cocos2d-x#main-features" target="_blank" rel="noopener">这里</a>, 详细的<code>changelog</code>可参考<a href="https://github.com/cocos2d/cocos2d-x/blob/v3/CHANGELOG" target="_blank" rel="noopener">这里</a>.在升级之前, 建议扫一遍<code>changelog</code>( 否则都不知道要做啥…).</p>
+<p>接下来, 进入正题啦:</p>
+<h3 id="语法更新"><a href="#语法更新" class="headerlink" title="语法更新"></a>语法更新</h3><p>本文将有非常多字符串替换的步骤, 都在vs2012中进行. vs2012中字符串替换窗口如下:<br><img src="o_Image.png" alt="此处是vs窗口截图"><br>本文将上图代表的替换表示为:( 以后将不特殊说明 )</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;regex-replace</span><br><span class="line">\bUIImageView\b &#x3D;&#x3D;&gt; ui::ImageView</span><br></pre></td></tr></table></figure>
+<h4 id="obj-c式命名-gt-c-命名空间式命名"><a href="#obj-c式命名-gt-c-命名空间式命名" class="headerlink" title="obj-c式命名 ==&gt; c++命名空间式命名"></a><a id="objc2cpp"></a>obj-c式命名 ==&gt; c++命名空间式命名</h4><p>以下是常见的替换:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;regex-replace</span><br><span class="line">&#x2F;&#x2F;Widget:</span><br><span class="line">\bUIWidget\b                                &#x3D;&#x3D;&gt; ui::Widget</span><br><span class="line">\bUIImageView\b                             &#x3D;&#x3D;&gt; ui::ImageView</span><br><span class="line">\bUIButton\b                                &#x3D;&#x3D;&gt; ui::Button</span><br><span class="line">...                                     </span><br><span class="line">\bUILayout\b                                &#x3D;&#x3D;&gt; ui::Layout</span><br><span class="line">\bUILabel\b                                 &#x3D;&#x3D;&gt; ui::Text</span><br><span class="line">\bUILayer\b                                 &#x3D;&#x3D;&gt; Layer</span><br><span class="line">\bCCObject\b                                &#x3D;&#x3D;&gt; Ref</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">\baddTouchEventListener\s*\(\s*(.+)\s*,\s*toucheventselector\s*\((.*)\)\s*\)  &#x3D;&#x3D;&gt; addTouchEventListener( CC_CALLBACK_2( $2, $1 ))</span><br><span class="line">\bTouchEventType\b                          &#x3D;&#x3D;&gt; ui::Widget::TouchEventType</span><br><span class="line">\bTOUCH_EVENT_([A-Z]+)\b                    &#x3D;&#x3D;&gt; ui::Widget::TouchEventType::$1</span><br><span class="line">\baddWidget\b\s*\(                          &#x3D;&#x3D;&gt; addChild(</span><br></pre></td></tr></table></figure>
+
+<p>注释: <code>\b</code>代表单词的分割符. <code>()</code>代表被标记的内容, <code>$1</code> 代表原始字符串中被标记的内容中的第一段. 具体请参考<a href="http://msdn.microsoft.com/query/dev11.query?appId=Dev11IDEF1&l=ZH-CN&k=k(vs.netregularexpressionhelp)&rd=true" target="_blank" rel="noopener">在 Visual Studio 中使用正则表达式</a>.</p>
+<h4 id="include文件变更"><a href="#include文件变更" class="headerlink" title="include文件变更"></a>include文件变更</h4><p>因为包结构的变化, 所以有些组件的定义会未被include.<br>主要用到的head文件有:</p>
+<table>
+<thead>
+<tr>
+<th>head</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>cocos2d.h</code></td>
+<td>cocos2dx的基本数据类和Node类都包含在里面</td>
+</tr>
+<tr>
+<td><code>ui/CocosGUI.h</code></td>
+<td>cocos2dx 绝大部分的UI类都包含在内. 2.x版本中, UI类都包含在<code>cocos-ext.h</code>中. 所以绝大部分原来引用<code>cocos-ext.h</code>的地方都需要引用此文件</td>
+</tr>
+<tr>
+<td><code>cocostudio/CocoStudio.h</code></td>
+<td>cocostudio功能相关的类都包含在里面. 最主要的是各种读取json文件的Reader. 其次, 是<code>Armature</code>动画.</td>
+</tr>
+<tr>
+<td><code>cocos-ext.h</code></td>
+<td>相比2.x的<code>cocos-ext.h</code>, 此文件做了非常大的精简. 现在主要包括<code>CCScrollView</code>及其子类, 另外还有<code>EditBox</code></td>
+</tr>
+</tbody></table>
+<h4 id="std-function作为监听函数"><a href="#std-function作为监听函数" class="headerlink" title="std::function作为监听函数"></a>std::function作为监听函数</h4><p>虽然, 3.1 的版本仍然支持绝大多数老版本的回调函数方式, 比如: <code>m_btnSubmit-&gt;addTouchEventListener (this,toucheventselector(RewardItemCell::onBtnSubmitClick));</code>仍然能工作. 但是, 不能保证在将来的3.x版本中仍然如此. 所以, 尽量一次搞定吧. 在<a href="#objc2cpp">obj-c式命名 ==&gt; c++命名空间式命名</a>章节中, 有批量替换的正则表达式,可作为参考.</p>
+<h3 id="功能更新"><a href="#功能更新" class="headerlink" title="功能更新"></a>功能更新</h3><h4 id="中间层UILayer的去除"><a href="#中间层UILayer的去除" class="headerlink" title="中间层UILayer的去除"></a>中间层<code>UILayer</code>的去除</h4><p>在2.x版本, <code>Widget</code>需要作为<code>UILayer</code>的孩子节点才能响应触摸事件; 而在3.x版本中取消了这个限制, <code>Widget</code>的响应机制变为跟<code>Menu</code>类似. 目前, 我也没有大量的去掉之前的<code>UILayer</code>层, 大部分功能仍然正常工作.</p>
+<h4 id="键盘响应方式变更"><a href="#键盘响应方式变更" class="headerlink" title="键盘响应方式变更"></a>键盘响应方式变更</h4><p>在2.x版本中, 键盘响应的监听是用<code>CCDirector::sharedDirector()-&gt;getKeypadDispatcher()-&gt;addDelegate(this);</code>实现的. 在3.x版本中是这样:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">auto keyListener &#x3D; EventListenerKeyboard::create();</span><br><span class="line">keyListener-&gt;onKeyReleased &#x3D; CC_CALLBACK_2(MainScene::keyBackClicked, this);</span><br><span class="line">_eventDispatcher-&gt;addEventListenerWithSceneGraphPriority(keyListener, this);</span><br></pre></td></tr></table></figure>
+<p>监听的取消, 也要做响应的替换.</p>
+<h4 id="Armature的陷阱"><a href="#Armature的陷阱" class="headerlink" title="Armature的陷阱"></a>Armature的陷阱</h4><p>在2.x版本中, 一般通过下面的方式来监听<code>Armature</code>的事件. 在监听到<code>COMPLETE</code>的时候, 可以将此<code>Armature</code>移出场景.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CCArmature* swf &#x3D; CCArmature::create(swfName);</span><br><span class="line">swf-&gt;getAnimation()-&gt;setMovementEventCallFunc(this, movementEvent_selector(OutCardEffectHelper::onAnimationEnd));</span><br></pre></td></tr></table></figure>
+
+<p>但是在3.x中, 我们不能在监听事件的回调函数中做任何可能会导致<code>release</code>此对象的操作. 否则, 会导野指针错误.<br>是不是有点鸡肋? 我们来看看这种情况是怎么发生的:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Scheduler-&gt;Armature:update(t)</span><br><span class="line">Armature-&gt;ArmatureAnimation:update(t)</span><br><span class="line">ArmatureAnimation-&gt;this:告诉监听者</span><br><span class="line">Note right of this:假设此时触发了COMPLETE事件</span><br><span class="line">Note right of this: this-&gt;remove Armature, release Armature</span><br><span class="line">Armature-&gt;Bone: update(t)</span><br><span class="line">Note right of Armature: set &#96;_armatureTransformDirty &#x3D; false&#96;</span><br><span class="line">Note right of Armature: but now, Armature has been RELEASED!!!</span><br></pre></td></tr></table></figure>
+
+<p>我临时用定时器来移除<code>Armature</code>的. 具体过程如下:</p>
+<ol>
+<li>为<code>ArmatureAnimation</code>增加一个公开函数:  <code>virtual MovementData *getMovementData() const { return _movementData; }</code></li>
+<li>通过下面的方式来移除: (PS: Lmada 表达式真是好用啊啊啊啊啊 )</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">auto data &#x3D; swf-&gt;getAnimation()-&gt;getMovementData();</span><br><span class="line">float speed &#x3D; data-&gt;scale;</span><br><span class="line">float frames &#x3D; data-&gt;duration;</span><br><span class="line">float delay &#x3D; frames&#x2F;60&#x2F;speed;</span><br><span class="line">string id &#x3D; FORMAT_TEXT( &quot;%p&quot;, swf );</span><br><span class="line">Director::getInstance()-&gt;getScheduler()-&gt;schedule( [swf](float t)&#123;swf-&gt;removeFromParent();&#125;,this,0,0,delay,false, id);</span><br></pre></td></tr></table></figure>
+<h4 id="更加优雅的anchorPoint"><a href="#更加优雅的anchorPoint" class="headerlink" title="更加优雅的anchorPoint"></a>更加优雅的anchorPoint</h4><p>如果你加载了cocostudio生成的ui json文件, 并改动过内部<code>Widget</code>的位置的话, 你会发现, 代码中<code>x=20</code>跟cocostudio ui编辑器中<code>x=20</code>效果是不一样的.<br>问题出在哪里呢?<br>简单来说, 2.x版本中的<code>anchorPoint</code>对自己在父亲节点的位置和孩子节点在自己中的位置都有影响; 3.x版本中的<code>anchorPoint</code>只对自己在父亲节点中的位置有影响.</p>
+<p>举个例子. 假设A是父亲节点,B是A的孩子节点. A和B同为10*10的正方形.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">A.anchorPoint &#x3D; Point(0.5,0.5);</span><br><span class="line">A.setSize(Size(10,10))</span><br><span class="line">B.anchorPoint &#x3D; Point(0.5,0.5);</span><br><span class="line">B.setSize(Size(10,10))</span><br><span class="line">B.setPosition( Point::ZERO );</span><br><span class="line">A.addChild(B);</span><br></pre></td></tr></table></figure>
+<p>在2.x版本中: A和B的位置完全重合<br>在3.x版本中: B的中心点和A的左下角的点重合.</p>
+<p><img src="o_Untitled%20Diagram.png" alt="此处是位置示意图"></p>
+<h4 id="Sprite的默认GLProgram"><a href="#Sprite的默认GLProgram" class="headerlink" title="Sprite的默认GLProgram"></a>Sprite的默认GLProgram</h4><p>什么?你没听过<code>GLProgram</code>, 那恭喜你, 可以跳过这小节了. 因为你肯定不会出现下面的恼人情况.</p>
+<p><code>SHADER_NAME_POSITION_TEXTURE_COLOR</code>是2.x版本中的默认<code>GLProgram</code>. 它对应的vect和frag分别是:<code>ccPositionTextureColor_vert</code>和<code>ccPositionTextureColor_frag</code>. vect用来确定位置,frag用来确定色彩.  </p>
+<p>然而, 在3.x版本中,默认的<code>GLProgram</code>是<code>SHADER_NAME_POSITION_TEXTURE_COLOR_NO_MVP</code>, 对应的vect和frag分别是:<code>ccPositionTextureColor_noMVP_vert</code>和<code>ccPositionTextureColor_noMVP_frag</code>.</p>
+<p>如果你恰好用过<code>ccPositionTextureColor_vert</code>的话, 建议改为<code>ccPositionTextureColor_noMVP_vert</code>. 否则会出现莫名的位置偏移问题.</p>
+<h4 id="stl-vector的不稳定排序导致的层级问题"><a href="#stl-vector的不稳定排序导致的层级问题" class="headerlink" title="stl::vector的不稳定排序导致的层级问题"></a>stl::vector的不稳定排序导致的层级问题</h4><p>2.x版本中, 如果没有对孩子设置过<code>zOrder</code>的话, 孩子节点的覆盖顺序为: 后加的节点在上层, 先加的节点在下层.</p>
+<p>3.x版本中, win32环境下, 孩子节点的覆盖层级还能保续. 但是在android平台下, <code>zOrder</code>相同的孩子, 层级顺序是随机的. 关键在下面的代码:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void Node::sortAllChildren()</span><br><span class="line">&#123;</span><br><span class="line">    if( _reorderChildDirty ) &#123;</span><br><span class="line">        std::sort( std::begin(_children), std::end(_children), nodeComparisonLess );</span><br><span class="line">        _reorderChildDirty &#x3D; false;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>win32和android平台对<code>stl::sort()</code>的实现不同, android下的排序算法不是稳定的. 解决方法:</p>
+<ol>
+<li>修改上述代码, 实现稳定排序</li>
+<li>添加孩子节点的时候手动设置<code>zOrder</code>来保证层级顺序.</li>
+</ol>
+<h4 id="umeng等第三方库的更新"><a href="#umeng等第三方库的更新" class="headerlink" title="umeng等第三方库的更新"></a>umeng等第三方库的更新</h4><p>第三方库, 也有很多跟cocos2dx版本相关. 注意升级, 否则会闪退.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cocos2dx/" rel="tag"># cocos2dx</a>
+              <a href="/tags/cocos2dx-3-x/" rel="tag"># cocos2dx-3.x</a>
+              <a href="/tags/anchorPoint/" rel="tag"># anchorPoint</a>
+              <a href="/tags/vector/" rel="tag"># vector</a>
+              <a href="/tags/Sprite/" rel="tag"># Sprite</a>
+              <a href="/tags/GLProgram/" rel="tag"># GLProgram</a>
+              <a href="/tags/Armature/" rel="tag"># Armature</a>
+              <a href="/tags/UILayer/" rel="tag"># UILayer</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/07/22/%E6%8A%80%E6%9C%AF/%5Bcocos2dx%5D%E6%B7%B1%E5%85%A5--%E5%87%A0%E4%B8%AA%E4%BB%A3%E8%A1%A8%E6%80%A7%E7%9A%84%E7%B1%BB%20(%E7%BB%AD)/" rel="prev" title="[cocos2dx]深入了解几个代表性的类 (续)">
+      <i class="fa fa-chevron-left"></i> [cocos2dx]深入了解几个代表性的类 (续)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/08/05/%E6%89%AF%E6%B7%A1/%E6%88%91%E4%B8%BA%E4%BB%80%E4%B9%88%E5%86%99%E5%8D%9A%E5%AE%A2/" rel="next" title="我为什么写博客">
+      我为什么写博客 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础准备"><span class="nav-number">1.</span> <span class="nav-text">基础准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进入正题"><span class="nav-number">2.</span> <span class="nav-text">进入正题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#语法更新"><span class="nav-number">2.1.</span> <span class="nav-text">语法更新</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#obj-c式命名-gt-c-命名空间式命名"><span class="nav-number">2.1.1.</span> <span class="nav-text">obj-c式命名 &#x3D;&#x3D;&gt; c++命名空间式命名</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#include文件变更"><span class="nav-number">2.1.2.</span> <span class="nav-text">include文件变更</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#std-function作为监听函数"><span class="nav-number">2.1.3.</span> <span class="nav-text">std::function作为监听函数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#功能更新"><span class="nav-number">2.2.</span> <span class="nav-text">功能更新</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#中间层UILayer的去除"><span class="nav-number">2.2.1.</span> <span class="nav-text">中间层UILayer的去除</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#键盘响应方式变更"><span class="nav-number">2.2.2.</span> <span class="nav-text">键盘响应方式变更</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Armature的陷阱"><span class="nav-number">2.2.3.</span> <span class="nav-text">Armature的陷阱</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#更加优雅的anchorPoint"><span class="nav-number">2.2.4.</span> <span class="nav-text">更加优雅的anchorPoint</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sprite的默认GLProgram"><span class="nav-number">2.2.5.</span> <span class="nav-text">Sprite的默认GLProgram</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#stl-vector的不稳定排序导致的层级问题"><span class="nav-number">2.2.6.</span> <span class="nav-text">stl::vector的不稳定排序导致的层级问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#umeng等第三方库的更新"><span class="nav-number">2.2.7.</span> <span class="nav-text">umeng等第三方库的更新</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

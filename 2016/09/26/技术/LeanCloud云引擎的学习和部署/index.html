@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要：本文是一个流水文，主要记录我在 LeanCloud 云平台上使用 node.js 搭建web服务器的过程。其中遇到的困难和需要记忆的知识点，在此做一个汇总。 安装node.js一定要是最新版本，否则各种 warn 和 err。安装的时候 warn 一定要处理，否则会导致意想不到的 err。 安装 avoscloud 工具一定要使用最新版本，因为 leanengine 2.0 和 3.0 版本">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[node.js] LeanCloud 云引擎的学习和部署">
+<meta property="og:url" content="http://blog.bookbook.in/2016/09/26/%E6%8A%80%E6%9C%AF/LeanCloud%E4%BA%91%E5%BC%95%E6%93%8E%E7%9A%84%E5%AD%A6%E4%B9%A0%E5%92%8C%E9%83%A8%E7%BD%B2/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要：本文是一个流水文，主要记录我在 LeanCloud 云平台上使用 node.js 搭建web服务器的过程。其中遇到的困难和需要记忆的知识点，在此做一个汇总。 安装node.js一定要是最新版本，否则各种 warn 和 err。安装的时候 warn 一定要处理，否则会导致意想不到的 err。 安装 avoscloud 工具一定要使用最新版本，因为 leanengine 2.0 和 3.0 版本">
+<meta property="article:published_time" content="2016-09-26T15:14:24.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="nodejs">
+<meta property="article:tag" content="npm">
+<meta property="article:tag" content="express">
+<meta property="article:tag" content="lean">
+<meta property="article:tag" content="avoscloud">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bookbook.in/2016/09/26/%E6%8A%80%E6%9C%AF/LeanCloud%E4%BA%91%E5%BC%95%E6%93%8E%E7%9A%84%E5%AD%A6%E4%B9%A0%E5%92%8C%E9%83%A8%E7%BD%B2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[node.js] LeanCloud 云引擎的学习和部署 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2016/09/26/%E6%8A%80%E6%9C%AF/LeanCloud%E4%BA%91%E5%BC%95%E6%93%8E%E7%9A%84%E5%AD%A6%E4%B9%A0%E5%92%8C%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [node.js] LeanCloud 云引擎的学习和部署
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-09-26 23:14:24" itemprop="dateCreated datePublished" datetime="2016-09-26T23:14:24+08:00">2016-09-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要：本文是一个流水文，主要记录我在 LeanCloud 云平台上使用 node.js 搭建web服务器的过程。其中遇到的困难和需要记忆的知识点，在此做一个汇总。</p>
+<h1 id="安装node-js"><a href="#安装node-js" class="headerlink" title="安装node.js"></a>安装node.js</h1><p>一定要是最新版本，否则各种 warn 和 err。<br>安装的时候 warn 一定要处理，否则会导致意想不到的 err。</p>
+<h1 id="安装-avoscloud-工具"><a href="#安装-avoscloud-工具" class="headerlink" title="安装 avoscloud 工具"></a>安装 avoscloud 工具</h1><p>一定要使用最新版本，因为 leanengine 2.0 和 3.0 版本的项目结构发生了变化，老版本的命令行工具不能正确找到对应的文件，无法启动。</p>
+<h1 id="node-js-学习"><a href="#node-js-学习" class="headerlink" title="node.js 学习"></a>node.js 学习</h1><p>node.js 是一个异步事件驱动的 web 框架。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> hostname = <span class="string">'127.0.0.1'</span>;</span><br><span class="line"><span class="keyword">const</span> port = <span class="number">1337</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> server = http.createServer();</span><br><span class="line">server.on(<span class="string">'request'</span>, (req, res) =&gt; &#123;</span><br><span class="line">    <span class="keyword">var</span> method = request.method;</span><br><span class="line">    <span class="keyword">var</span> url = request.url;</span><br><span class="line"></span><br><span class="line">    req.on(<span class="string">'data'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">chunk</span>) </span>&#123;</span><br><span class="line">        body.push(chunk);</span><br><span class="line">    &#125;).on(<span class="string">'end'</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        body = Buffer.concat(body).toString();</span><br><span class="line">        <span class="comment">// at this point, `body` has the entire request body stored in it as a string</span></span><br><span class="line">    &#125;).on(<span class="string">'error'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">        <span class="comment">// This prints the error message and stack trace to `stderr`.</span></span><br><span class="line">        <span class="built_in">console</span>.error(err.stack);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    res.writeHead(<span class="number">200</span>, &#123; <span class="string">'Content-Type'</span>: <span class="string">'text/plain'</span> &#125;);</span><br><span class="line">    res.end(<span class="string">'Hello World\n'</span>);</span><br><span class="line">&#125;);</span><br><span class="line">server.listen(port, hostname, () =&gt; &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`Server running at http://<span class="subst">$&#123;hostname&#125;</span>:<span class="subst">$&#123;port&#125;</span>/`</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h1 id="express-学习"><a href="#express-学习" class="headerlink" title="express 学习"></a>express 学习</h1><h2 id="Express的文件结构"><a href="#Express的文件结构" class="headerlink" title="Express的文件结构"></a>Express的文件结构</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── app.js</span><br><span class="line">├── bin</span><br><span class="line">│   └── www</span><br><span class="line">├── package.json</span><br><span class="line">├── public</span><br><span class="line">│   ├── images</span><br><span class="line">│   ├── javascripts</span><br><span class="line">│   └── stylesheets</span><br><span class="line">│       └── style.css</span><br><span class="line">├── routes</span><br><span class="line">│   ├── index.js</span><br><span class="line">│   └── users.js</span><br><span class="line">└── views</span><br><span class="line">    ├── error.jade</span><br><span class="line">    ├── index.jade</span><br><span class="line">    └── layout.jade</span><br></pre></td></tr></table></figure>
+
+<h2 id="routing"><a href="#routing" class="headerlink" title="routing"></a>routing</h2><p>Route definition takes the following structure:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.METHOD(PATH, HANDLER)</span><br></pre></td></tr></table></figure>
+
+<p>Where:</p>
+<ul>
+<li><code>app</code> is an instance of express.</li>
+<li><code>METHOD</code> is an HTTP request method.</li>
+<li><code>PATH</code> is a path on the server.</li>
+<li><code>HANDLER</code> is the function executed when the route is matched.</li>
+</ul>
+<h3 id="PATH-还支持正则表达式："><a href="#PATH-还支持正则表达式：" class="headerlink" title="PATH 还支持正则表达式："></a>PATH 还支持正则表达式：</h3><p>This route path will match abcd, abxcd, abRANDOMcd, ab123cd, and so on.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">app.get(<span class="string">'/ab*cd'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  res.send(<span class="string">'ab*cd'</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>This route path will match /abe and /abcde.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">app.get(<span class="string">'/ab(cd)?e'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line"> res.send(<span class="string">'ab(cd)?e'</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="express-Router"><a href="#express-Router" class="headerlink" title="express.Router"></a>express.Router</h3><p>利用 express.Router 中间件可以创建一个子应用来响应特定的请求。<br>以下的代码，表示把所有 <code>/birds</code> 路径下的请求都托付给 <code>birds.js</code> 文件处理。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// birds.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>);</span><br><span class="line"><span class="keyword">var</span> router = express.Router();</span><br><span class="line"></span><br><span class="line"><span class="comment">// middleware that is specific to this router</span></span><br><span class="line">router.use(<span class="function"><span class="keyword">function</span> <span class="title">timeLog</span>(<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'Time: '</span>, <span class="built_in">Date</span>.now());</span><br><span class="line">  next();</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// define the home page route</span></span><br><span class="line">router.get(<span class="string">'/'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  res.send(<span class="string">'Birds home page'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// define the about route</span></span><br><span class="line">router.get(<span class="string">'/about'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  res.send(<span class="string">'About birds'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = router;</span><br></pre></td></tr></table></figure>
+
+<p>app 中：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//app.js</span></span><br><span class="line"><span class="keyword">var</span> birds = <span class="built_in">require</span>(<span class="string">'./birds'</span>);</span><br><span class="line">app.use(<span class="string">'/birds'</span>, birds);</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="middleware"><a href="#middleware" class="headerlink" title="middleware"></a>middleware</h2><p><a href="http://expressjs.com/en/guide/using-middleware.html" target="_blank" rel="noopener">http://expressjs.com/en/guide/using-middleware.html</a></p>
+<p>中间件可以应用在 app 上，也可以应用在 router 上，可以使所有的请求都必须先经过中间件，最后到达具体的请求处理函数。下面是一个记录请求时间的中间件，可以记录任何请求的请求时间：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>);</span><br><span class="line"><span class="keyword">var</span> app = express();</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> requestTime = <span class="function"><span class="keyword">function</span> (<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line">  req.requestTime = <span class="built_in">Date</span>.now();</span><br><span class="line">  next();</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">app.use(requestTime);</span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> responseText = <span class="string">'Hello World!'</span>;</span><br><span class="line">  responseText += <span class="string">'Requested at: '</span> + req.requestTime + <span class="string">''</span>;</span><br><span class="line">  res.send(responseText);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">3000</span>);</span><br></pre></td></tr></table></figure>
+
+<p>express有一些自带的中间件，也有很多扩展中间件，最常用的是 static 中间件，用来访问静态资源：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> options = &#123;</span><br><span class="line">  dotfiles: <span class="string">'ignore'</span>,</span><br><span class="line">  etag: <span class="literal">false</span>,</span><br><span class="line">  extensions: [<span class="string">'htm'</span>, <span class="string">'html'</span>],</span><br><span class="line">  index: <span class="literal">false</span>,</span><br><span class="line">  maxAge: <span class="string">'1d'</span>,</span><br><span class="line">  redirect: <span class="literal">false</span>,</span><br><span class="line">  setHeaders: <span class="function"><span class="keyword">function</span> (<span class="params">res, path, stat</span>) </span>&#123;</span><br><span class="line">    res.set(<span class="string">'x-timestamp'</span>, <span class="built_in">Date</span>.now());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">app.use(express.static(<span class="string">'public'</span>, options));</span><br><span class="line">app.use(express.static(<span class="string">'uploads'</span>));</span><br><span class="line">app.use(express.static(<span class="string">'files'</span>));</span><br></pre></td></tr></table></figure>
+
+<h2 id="template"><a href="#template" class="headerlink" title="template"></a>template</h2><h3 id="jade"><a href="#jade" class="headerlink" title="jade"></a>jade</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//app.js</span></span><br><span class="line">app.set(<span class="string">'view engine'</span>, <span class="string">'jade'</span>);</span><br><span class="line">app.get(<span class="string">'/'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  res.render(<span class="string">'index'</span>, &#123; <span class="attr">title</span>: <span class="string">'Hey'</span>, <span class="attr">message</span>: <span class="string">'Hello there!'</span>&#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//index.jade</span></span><br><span class="line">html</span><br><span class="line">  head</span><br><span class="line">    title= title</span><br><span class="line">  body</span><br><span class="line">    h1= message</span><br></pre></td></tr></table></figure>
+
+<p>jade 语法非常简单：<a href="http://jade-lang.com" target="_blank" rel="noopener">http://jade-lang.com</a></p>
+<h3 id="ejs"><a href="#ejs" class="headerlink" title="ejs"></a>ejs</h3><p>略</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/nodejs/" rel="tag"># nodejs</a>
+              <a href="/tags/npm/" rel="tag"># npm</a>
+              <a href="/tags/express/" rel="tag"># express</a>
+              <a href="/tags/lean/" rel="tag"># lean</a>
+              <a href="/tags/avoscloud/" rel="tag"># avoscloud</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/08/05/%E6%89%AF%E6%B7%A1/%E5%88%AB%E8%BD%BB%E6%98%93%E6%89%93%E5%BC%80%E5%BE%AE%E4%BF%A1APP/" rel="prev" title="别轻易打开微信">
+      <i class="fa fa-chevron-left"></i> 别轻易打开微信
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/02/06/%E6%89%AF%E6%B7%A1/%E4%B8%8D%E7%AE%97%E6%98%A5%E8%8A%82%EF%BC%8C%E4%BD%A0%E6%9C%89%E5%A4%9A%E4%B9%85%E6%B2%A1%E6%9C%89%E5%9B%9E%E8%BF%87%E5%AE%B6%EF%BC%9F/" rel="next" title="不算春节，你有多久没有回过家？">
+      不算春节，你有多久没有回过家？ <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#安装node-js"><span class="nav-number">1.</span> <span class="nav-text">安装node.js</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#安装-avoscloud-工具"><span class="nav-number">2.</span> <span class="nav-text">安装 avoscloud 工具</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#node-js-学习"><span class="nav-number">3.</span> <span class="nav-text">node.js 学习</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#express-学习"><span class="nav-number">4.</span> <span class="nav-text">express 学习</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Express的文件结构"><span class="nav-number">4.1.</span> <span class="nav-text">Express的文件结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#routing"><span class="nav-number">4.2.</span> <span class="nav-text">routing</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PATH-还支持正则表达式："><span class="nav-number">4.2.1.</span> <span class="nav-text">PATH 还支持正则表达式：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#express-Router"><span class="nav-number">4.2.2.</span> <span class="nav-text">express.Router</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#middleware"><span class="nav-number">4.3.</span> <span class="nav-text">middleware</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#template"><span class="nav-number">4.4.</span> <span class="nav-text">template</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#jade"><span class="nav-number">4.4.1.</span> <span class="nav-text">jade</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ejs"><span class="nav-number">4.4.2.</span> <span class="nav-text">ejs</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

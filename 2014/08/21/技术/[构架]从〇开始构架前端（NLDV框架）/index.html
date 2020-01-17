@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要：一个普通应用，大到微信， 小到豆瓣FM，必不可少的都包括四部分：Network、Logic、Data、View（NLDV）。如何把他们组合起来，结构清晰、又协作便利，是前端主程的基本修养。本文用通（有）俗（点）易（啰）懂（嗦）的语言，界定了这四个模块的职能范围，同时提供了一种简单易用的组织方式。知者可互动，不知者可参考。 先唠点嗑说说自己吧：毕业三年，经历4个项目，前两个主做功能开发，后两个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[构架]从〇开始构架前端（NLDV框架）">
+<meta property="og:url" content="http://blog.bookbook.in/2014/08/21/%E6%8A%80%E6%9C%AF/[%E6%9E%84%E6%9E%B6]%E4%BB%8E%E3%80%87%E5%BC%80%E5%A7%8B%E6%9E%84%E6%9E%B6%E5%89%8D%E7%AB%AF%EF%BC%88NLDV%E6%A1%86%E6%9E%B6%EF%BC%89/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要：一个普通应用，大到微信， 小到豆瓣FM，必不可少的都包括四部分：Network、Logic、Data、View（NLDV）。如何把他们组合起来，结构清晰、又协作便利，是前端主程的基本修养。本文用通（有）俗（点）易（啰）懂（嗦）的语言，界定了这四个模块的职能范围，同时提供了一种简单易用的组织方式。知者可互动，不知者可参考。 先唠点嗑说说自己吧：毕业三年，经历4个项目，前两个主做功能开发，后两个">
+<meta property="og:image" content="http://blog.bookbook.in/2014/08/21/%E6%8A%80%E6%9C%AF/[%E6%9E%84%E6%9E%B6]%E4%BB%8E%E3%80%87%E5%BC%80%E5%A7%8B%E6%9E%84%E6%9E%B6%E5%89%8D%E7%AB%AF%EF%BC%88NLDV%E6%A1%86%E6%9E%B6%EF%BC%89/How%20to%20use%20the%20Public%20folder.png">
+<meta property="article:published_time" content="2014-08-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="框架">
+<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="NLDV">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://blog.bookbook.in/2014/08/21/%E6%8A%80%E6%9C%AF/[%E6%9E%84%E6%9E%B6]%E4%BB%8E%E3%80%87%E5%BC%80%E5%A7%8B%E6%9E%84%E6%9E%B6%E5%89%8D%E7%AB%AF%EF%BC%88NLDV%E6%A1%86%E6%9E%B6%EF%BC%89/How%20to%20use%20the%20Public%20folder.png">
+
+<link rel="canonical" href="http://blog.bookbook.in/2014/08/21/%E6%8A%80%E6%9C%AF/[%E6%9E%84%E6%9E%B6]%E4%BB%8E%E3%80%87%E5%BC%80%E5%A7%8B%E6%9E%84%E6%9E%B6%E5%89%8D%E7%AB%AF%EF%BC%88NLDV%E6%A1%86%E6%9E%B6%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[构架]从〇开始构架前端（NLDV框架） | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2014/08/21/%E6%8A%80%E6%9C%AF/[%E6%9E%84%E6%9E%B6]%E4%BB%8E%E3%80%87%E5%BC%80%E5%A7%8B%E6%9E%84%E6%9E%B6%E5%89%8D%E7%AB%AF%EF%BC%88NLDV%E6%A1%86%E6%9E%B6%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [构架]从〇开始构架前端（NLDV框架）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2014-08-21 00:00:00" itemprop="dateCreated datePublished" datetime="2014-08-21T00:00:00+08:00">2014-08-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要：一个普通应用，大到微信， 小到豆瓣FM，必不可少的都包括四部分：Network、Logic、Data、View（NLDV）。如何把他们组合起来，<strong>结构清晰</strong>、又<strong>协作便利</strong>，是前端主程的基本修养。本文用通（有）俗（点）易（啰）懂（嗦）的语言，界定了这四个模块的职能范围，同时提供了一种简单易用的组织方式。知者可互动，不知者可参考。</p>
+<h1 id="先唠点嗑"><a href="#先唠点嗑" class="headerlink" title="先唠点嗑"></a>先唠点嗑</h1><p>说说自己吧：毕业三年，经历4个项目，前两个主做功能开发，后两个全面负责。因为大学对UI交互深感兴趣，梦想成为优秀的交互设计师，所以毕业就做了前端，想着至少也离得近点。不料一入代码深似海，以前看过的十几本交互书也随风而去，脑子里剩下的只有：几行干巴巴的代码、几个平台的API、和一点不成熟的总结。借此机会，整理一下。</p>
+<p>我把他名为<strong>NLDV</strong>，也就图一叫着方便（首字母的组合），并不是想标新立异。你或许会想到MVC，其实本质上跟MVC没啥区别。只是与时俱进，现在App几乎都是连着网的，也就把Network提出来了。</p>
+<p>从第三个项目开始，这个NLDV的结构在我意识里渐渐清晰。第四个项目（游戏），因为是从零开始，我把NLDV的结构应用到了项目中。经历了渲染引擎更换和网络引擎更换，过程中其它模块儿做得改动极少，切身体会到它的妙处，忍不住前来分享。</p>
+<h1 id="从账号登陆谈起"><a href="#从账号登陆谈起" class="headerlink" title="从账号登陆谈起"></a>从账号登陆谈起</h1><p>我们从一个最简单的登陆请求谈起。按照<code>NLDV</code>框架的思想，步骤如下：</p>
+<ol>
+<li>Logic告诉Network：以后你收到来自远方服务器的消息都跟我打声招呼，不然我告诉程序员整死你丫。(Logic向Network注册网络监听函数。)</li>
+<li>用户点击登陆按钮，此时View调用Logic的登录方法。Logic赶紧写封信，告诉Network把这封信送到服务器。（Logic根据传入的参数，构造相应的消息体，Network负责把消息发出去）</li>
+<li>漫长的等待。。。</li>
+<li>Network终于等到服务器发来的消息，就急急忙忙递给Logic。Logic打开信封一看：“尼玛，居然能一次成功了！32个赞！”<ol>
+<li>可是信上还有性别，年龄，头像，邮箱等等等信息，头都大了，不记下来恐怕是隔夜就忘啊。于是，找来Logic的御用秘书Data（只有Logic能写入），这些信息就交给你了，临时存储还是永久存储我不管，反正我和View来取的时候，你要能给我。</li>
+<li>好消息要和大家分享，于是Logic全应用广播：“我们已经出色的完成了登陆任务，大家再接再厉”</li>
+</ol>
+</li>
+<li>View收到此广播消息，用界面告诉用户“亲爱的，你登陆成功了”。到此，完成一次登陆。<br> （<em>PS：对于大多数界面实例，Logic刚刚发的这条广播是可以当耳边风的，因为跟自己业务无关。但，对于登陆界面来说，他必须时刻竖起耳朵监听这个消息，要不然就是失职。所以一般情况下登陆View会在发送登录请求之前就向系统注册监听这个消息的函数，以确保万无一失。这是后话，没看懂也没关系</em>）</li>
+</ol>
+<h1 id="职责分配"><a href="#职责分配" class="headerlink" title="职责分配"></a>职责分配</h1><p>首先，看一幅图：<br><img src="How%20to%20use%20the%20Public%20folder.png" alt="NLDV Diagram" title="NLDV Dirgram">  </p>
+<p>通过上面的例子和图示，可以来总结一下NLDV四大家族各自的职能范围了：</p>
+<h2 id="Network"><a href="#Network" class="headerlink" title="Network"></a>Network</h2><p>Network的是数据交流的基础。在这里并不单指socket，并且不暴露任何底层网络的实现。而是一个更加完整、稳定，有纠错功能的职能单位。主要功能：</p>
+<ul>
+<li>响应Logic的调用，将构造好的消息体转换成服务器能识别的字节串，发送出去。</li>
+<li>接收服务器发过来的字节串，转换成前端可识别的结构体，通知Logic。<ul>
+<li>前后端在定义消息的时候，一般会用一个消息号(/或 <code>主消息号-子消息号</code>对）来唯一标识一种消息。</li>
+<li>而Logic也不止一个，账号系统，业务系统等，每个系统有对应的Logic，分别处理相关的业务逻辑。</li>
+<li>一个Logic仅仅会对某一些消息感兴趣，所以，它只向Network注册自己感兴趣的消息号。</li>
+</ul>
+</li>
+<li>容错处理。比如有限次的自动重发，需要的时候自动重连，网络彻底不可用时通知Logic等。</li>
+</ul>
+<p>我们用最少的接口来定义它：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Real msg struct will implement this interface, adding some getter/setters.</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">IMessage</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="function">uint <span class="title">getMsgId</span><span class="params">()</span></span>;<span class="comment">// unique id for a type of msg</span></span><br><span class="line">    <span class="keyword">byte</span>[] toBytes();<span class="comment">// serialize to bytes.</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">parseBytes</span><span class="params">( <span class="keyword">byte</span>[] bytes)</span></span>; <span class="comment">//deserialize to useful info.</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Generally, "Logic" will implement this interface for recieving data</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">INetworkHandler</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onMessageRecv</span><span class="params">( IMessage msg)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">INetwork</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">send</span><span class="params">( IMessage msg )</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">registHandler</span><span class="params">( uint msgId, INetworkHandler handler )</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">unregistHandler</span><span class="params">( uint msgId, INetworkHandler handler )</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Logic"><a href="#Logic" class="headerlink" title="Logic"></a>Logic</h2><p>Logic是一个应用中核心实现业务逻辑的部分。主要功能有： </p>
+<ul>
+<li>响应来自用户（View）的功能请求。或通过写入Data来改变状态，或构造消息体发送到服务器。</li>
+<li>收到网络消息后，做相应的逻辑处理，将数据的改变写入Data，最后广播本地事件。<ul>
+<li>这里的本地事件通常用一个 字符串或者整数指代，称为本地事件ID。</li>
+<li>这个过程通常会用到<a href="http://baike.baidu.com/view/1854779.htm" target="_blank" rel="noopener">观察者模式</a>。有一个本地消息中心<code>LocalMessageCenter</code>，监听者（通常是View）用本地事件ID来向<code>LocalMessageCenter</code>注册，而Logic调用<code>LocalMessageCenter.dispatch( localEventId )</code> 即可广播此本地事件。</li>
+<li>是的，Logic直接调用View的方法也能达到同样的目的。但是，为了减小Logic和View之间的耦合性，还是选用<code>LocalMessageCenter</code>作为中间层。随着需求的改变，View类可能面目全非，但<code>LocalMessageCenter</code>的接口却可以长久不变。</li>
+</ul>
+</li>
+</ul>
+<p>Logic的大致结构如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SomeLogic</span> <span class="title">implemets</span> <span class="title">INetworkHandler</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    SomeLogic()</span><br><span class="line">    &#123;</span><br><span class="line">        Network.getInstance().registHandler(<span class="number">1</span>, <span class="keyword">this</span>);</span><br><span class="line">        Network.getInstance().registHandler(<span class="number">2</span>, <span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onMessageRecv</span><span class="params">( IMessage msg)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">switch</span>( msg.getMsgId() )</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">                logicHandler1(IMessage msg);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">                logicHandler2(IMessage msg);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//请求操作</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">logicReq1</span><span class="params">(...)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">logicReq2</span><span class="params">(...)</span></span>;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment">//消息处理</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">logicHandler1</span><span class="params">(IMessage msg)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">//<span class="doctag">TODO:</span> 收到消息，逻辑处理</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">//<span class="doctag">TODO:</span> 向Data写入数据</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">//<span class="doctag">TODO:</span> 广播本地事件</span></span><br><span class="line">        LocalMessageCenter.getInstance().dispatch( <span class="string">"Logic1Compelete"</span> );</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">logicHandler2</span><span class="params">(IMessage msg)</span></span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ILocalMessageHandler</span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onLocalMessage</span><span class="params">( String msg )</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">LocalMessageCenter</span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> LocalMessageCenter <span class="title">getInstance</span><span class="params">()</span></span>; <span class="comment">// Singleton</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">dispatch</span><span class="params">( String msg )</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">regist</span><span class="params">( String msg, ILocalMessageHandler handler )</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">unregist</span><span class="params">( String msg, ILocalMessageHandler handler )</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Data"><a href="#Data" class="headerlink" title="Data"></a>Data</h2><p>这个模块是全应用的数据中心。提供两个功能：</p>
+<ul>
+<li><strong>存储</strong>。前面已经提到，基本只有Logic对Data有写入权限。由于没有想到好的办法，这个规范暂时只能通过编码习惯来约定，没有做框架级的约定，如果大家有好的办法，欢迎补充。Logic 不关心数据的存储方式：同步OR异步，临时OR永久；这些都由Data自己决定。</li>
+<li><strong>读取</strong>。Logic和View都会使用到Data中的数据。但是<strong>需要注意异步读取的问题</strong>。一般App要求View对操作的响应速度要在0.1s级别。所以，若涉及大量的数据存储或读取，便需要借助异步处理。对于存储，我们可能不是那么关心异步存储什么时候结束，只需要知道它成功了既可。但对于读取，经常遇到的情况是：页面上加个菊花，数据完全读取成功之后，移除菊花。这就需要一个通知机制。此时，我们也会用<code>LocalMessageCenter</code>作为通信的桥梁。</li>
+</ul>
+<h2 id="View"><a href="#View" class="headerlink" title="View"></a>View</h2><p>NLDV框架对View的限制，相比以上3个模块，非常少。因为，对于NLDV框架来说，View跟特定的平台无关，即它是对各种不同平台显示框架的抽象。在<code>IOS</code>里它是<code>UIFramework</code>,在<code>Android</code>里它是<code>xxx</code>，在游戏里它是<code>openGL</code>，甚至，在下面会讲到的机器人模拟器里它是一堆测试代码。</p>
+<p>在这个框架里，View只在两个过程中出现：</p>
+<ol>
+<li>调用Logic的方法，发送逻辑请求。</li>
+<li>监听本地事件，读取Data，显示内容。</li>
+</ol>
+<p>只补充一点：在View显示过程中，需要用到很多二级数据（二级数据，就是跟原始数据相对，对原始数据进行整合或者筛选后得到的数据），这些二级数据的处理过程最好在View中处理。因为这些代码大多跟特定的界面有关，而跟App的主要逻辑关系不大，为了以后更改方便，最好写在View里。</p>
+<h1 id="WHY-NLDV"><a href="#WHY-NLDV" class="headerlink" title="WHY NLDV?"></a>WHY NLDV?</h1><p>看到这里，读者大概能隐约的感受到NLDV的一些优点，但是又不那么清晰，要不要看下去呢？下个里程碑就到了看这个人扯淡有用么？再看下去两盘Dota的时间可就没了丫。。。</p>
+<p>别急，举几个栗子提提神。</p>
+<h2 id="引擎更换"><a href="#引擎更换" class="headerlink" title="引擎更换"></a>引擎更换</h2><p>最早，因为兼容PC版本的斗地主，我们采用了原始的字节对齐的方式进行网络传输。又因为设计失误，网络层字节的pack和unpack以及异步读取的处理，都各种出问题。（因为需要跨平台，所以我们用了C++语言，采用了最基础的BSD socket进行socket连接。）</p>
+<p>结果是，游戏在网络不稳定的情况下各种闪退。这下产品经理不高兴了。又因为当初开发网络层的同学接手了其他事情，只剩下我各种修修补补，最终也没能彻底解决问题。</p>
+<p>于是，我决定重写网络层。（妈蛋，早看这段代码不爽了）。于是我花了两天封装了一个带自动重连和容错功能，支持异步接受和发送的<code>GameSocket</code>，简单测试可以发送和接受字节。5分钟替换游戏中的旧网络层，你猜，怎么着？一次Run就登陆成功了！点了几下，所有功能完好如初！尼玛，世界上有比这还幸福的事情么？</p>
+<p>其实，别听我说的挺牛逼的，其实替换过程就改了不到10行代码。因为实在是跟Logic、Data、View没啥耦合的地方。</p>
+<h2 id="制作机器人"><a href="#制作机器人" class="headerlink" title="制作机器人"></a>制作机器人</h2><p>一般在线游戏，都会有一两个用户没问题，大量用户就有问题的时候。所以，机器人测试总是必要的。</p>
+<p>当我把前端代码交给后端，简单介绍了一下结构之后，后端的小伙伴儿们都惊呆了。不是因为他看到这框架有多么优秀，而是：“这样，我只要写一个while循环，500行代码就能完成一个机器人了啊。我还申请了一个星期来做这个事情呢！”（这是他的原话）。</p>
+<p>说的更具体点，制作一个机器人就这么几步：</p>
+<ol>
+<li>把所有的View代码文件删掉。</li>
+<li>写一个<code>AndroidLoop</code>类。在这个类里，监听斗地主主流程里必须处理的<code>LocalMessage</code>，在适当的时候发送主流程中的请求。（对于斗地主来说，主流程包括登陆、选房间、抢地主、出牌、退房间。每个应用有所不同，灵活自便。）</li>
+<li>NLD（NLDV去掉V）部分都不变，几乎不用改一行代码。</li>
+</ol>
+<h2 id="逻辑清晰"><a href="#逻辑清晰" class="headerlink" title="逻辑清晰"></a>逻辑清晰</h2><p>框架的作用，理论层面上规范了整个软件的结构；而在实现层面，通俗一点，它就规范了<strong>什么代码该写在哪里，不要随地乱放</strong>。</p>
+<p>作为一个针对性很强的框架，在上述过程中，NLDV约束了很多可能不需要约束的规范。其中大部分是项目中的干货经验。我知道他并不总是好的，我考略了很久要不要把他们加进来。最终，我还是写下来了，考虑到刚开始从零开始写应用的读者来说，这些可能避免他们走很多弯路；而对有经验的读者来说，可能他们有判断的能力，可以取舍自如。</p>
+<p>我想，如果严格按照NLDV框架来编写程序，显而易见的好处就是：</p>
+<ol>
+<li>层次清晰，出现问题容易定位。</li>
+<li>主程再也不用担心同事们把代码写得到处都是了。。。</li>
+</ol>
+<h1 id="框架之外（下回分解）"><a href="#框架之外（下回分解）" class="headerlink" title="框架之外（下回分解）"></a>框架之外（下回分解）</h1><h1 id="NLDV的适用场景（下回分解）"><a href="#NLDV的适用场景（下回分解）" class="headerlink" title="NLDV的适用场景（下回分解）"></a>NLDV的适用场景（下回分解）</h1><p>因为各种原因，这篇博客断断续续写了两个星期了，再不发布就要胎死腹中了。所以，最后两节放在这篇日志的续集中写。如果您感兴趣，请私信我，我会尽快补上。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%A1%86%E6%9E%B6/" rel="tag"># 框架</a>
+              <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag"># 设计模式</a>
+              <a href="/tags/NLDV/" rel="tag"># NLDV</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/08/11/%E8%AF%BB%E4%B9%A6/%E5%A6%82%E4%BD%95%E9%98%85%E8%AF%BB%E4%B8%80%E6%9C%AC%E4%B9%A6/" rel="prev" title="《如何阅读一本书》读书笔记">
+      <i class="fa fa-chevron-left"></i> 《如何阅读一本书》读书笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/11/30/%E8%AF%BB%E4%B9%A6/%E8%BF%98%E5%8E%9F%E4%B8%80%E4%B8%AA%E7%9C%9F%E5%AE%9E%E7%9A%84%E6%94%BF%E5%95%86%E5%9C%88/" rel="next" title="《掌舵》读书笔记">
+      《掌舵》读书笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#先唠点嗑"><span class="nav-number">1.</span> <span class="nav-text">先唠点嗑</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#从账号登陆谈起"><span class="nav-number">2.</span> <span class="nav-text">从账号登陆谈起</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#职责分配"><span class="nav-number">3.</span> <span class="nav-text">职责分配</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Network"><span class="nav-number">3.1.</span> <span class="nav-text">Network</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Logic"><span class="nav-number">3.2.</span> <span class="nav-text">Logic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Data"><span class="nav-number">3.3.</span> <span class="nav-text">Data</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#View"><span class="nav-number">3.4.</span> <span class="nav-text">View</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WHY-NLDV"><span class="nav-number">4.</span> <span class="nav-text">WHY NLDV?</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引擎更换"><span class="nav-number">4.1.</span> <span class="nav-text">引擎更换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#制作机器人"><span class="nav-number">4.2.</span> <span class="nav-text">制作机器人</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#逻辑清晰"><span class="nav-number">4.3.</span> <span class="nav-text">逻辑清晰</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#框架之外（下回分解）"><span class="nav-number">5.</span> <span class="nav-text">框架之外（下回分解）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NLDV的适用场景（下回分解）"><span class="nav-number">6.</span> <span class="nav-text">NLDV的适用场景（下回分解）</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

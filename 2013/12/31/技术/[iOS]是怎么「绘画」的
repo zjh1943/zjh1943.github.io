@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要：如果您以前从事其它平台的图形&#x2F;界面开发或者游戏开发,一定知道, 不管上层UI怎么呈现和响应, 底层必须有一个绘图引擎. iOS也不例外. 本文详细介绍了iOS Graphics的用法和相关知识, 希望对您的Coding有帮助.   ^此博客需要对CALayer和UIView有基本的了解. 可参考博客谈谈iOS Animation 什么是绘图引擎绘图引擎, 通俗来说就好比给你一张纸一支笔和若干">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[iOS]是怎么「绘画」的?">
+<meta property="og:url" content="http://blog.bookbook.in/2013/12/31/%E6%8A%80%E6%9C%AF/[iOS]%E6%98%AF%E6%80%8E%E4%B9%88%E3%80%8C%E7%BB%98%E7%94%BB%E3%80%8D%E7%9A%84">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要：如果您以前从事其它平台的图形&#x2F;界面开发或者游戏开发,一定知道, 不管上层UI怎么呈现和响应, 底层必须有一个绘图引擎. iOS也不例外. 本文详细介绍了iOS Graphics的用法和相关知识, 希望对您的Coding有帮助.   ^此博客需要对CALayer和UIView有基本的了解. 可参考博客谈谈iOS Animation 什么是绘图引擎绘图引擎, 通俗来说就好比给你一张纸一支笔和若干">
+<meta property="og:image" content="https://developer.apple.com/library/ios/documentation/GraphicsImaging/Reference/CGAffineTransform/Art/equation01_2x.png">
+<meta property="article:published_time" content="2013-12-30T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="ios">
+<meta property="article:tag" content="graphic">
+<meta property="article:tag" content="anmation">
+<meta property="article:tag" content="CGContextRef">
+<meta property="article:tag" content="drawRect">
+<meta property="article:tag" content="drawAtPoint">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://developer.apple.com/library/ios/documentation/GraphicsImaging/Reference/CGAffineTransform/Art/equation01_2x.png">
+
+<link rel="canonical" href="http://blog.bookbook.in/2013/12/31/%E6%8A%80%E6%9C%AF/[iOS]%E6%98%AF%E6%80%8E%E4%B9%88%E3%80%8C%E7%BB%98%E7%94%BB%E3%80%8D%E7%9A%84">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[iOS]是怎么「绘画」的? | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2013/12/31/%E6%8A%80%E6%9C%AF/[iOS]%E6%98%AF%E6%80%8E%E4%B9%88%E3%80%8C%E7%BB%98%E7%94%BB%E3%80%8D%E7%9A%84?/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [iOS]是怎么「绘画」的?
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2013-12-31 00:00:00" itemprop="dateCreated datePublished" datetime="2013-12-31T00:00:00+08:00">2013-12-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要：如果您以前从事其它平台的图形/界面开发或者游戏开发,一定知道, 不管上层UI怎么呈现和响应, 底层必须有一个绘图引擎. iOS也不例外. 本文详细介绍了iOS Graphics的用法和相关知识, 希望对您的Coding有帮助.  </p>
+<p>^此博客需要对<code>CALayer</code>和<code>UIView</code>有基本的了解. 可参考博客<a href="http://geeklu.com/2012/09/animation-in-ios/" target="_blank" rel="noopener">谈谈iOS Animation</a></p>
+<h1 id="什么是绘图引擎"><a href="#什么是绘图引擎" class="headerlink" title="什么是绘图引擎"></a>什么是绘图引擎</h1><p>绘图引擎, 通俗来说就好比给你一张纸一支笔和若干颜色的颜料, 你可以用它来做<strong>最基本</strong>的图形绘制.<br>一个<strong>最基本的绘图引擎</strong>包括一下接口:  </p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Code-1</span></span><br><span class="line">I1. drawLine()		<span class="comment">//绘制任意线条,并支持对线条上色.</span></span><br><span class="line">I2. drawPath()		<span class="comment">//根据路径绘制形状,并支持填充颜色.</span></span><br><span class="line">I3. drawImage()		<span class="comment">//绘制图像(e.g. xxx.jpg, xxx.png)</span></span><br><span class="line">I4. drawGradient()	<span class="comment">//绘制渐变填充</span></span><br><span class="line">I5. transform()		<span class="comment">//矩阵映射变换.</span></span><br><span class="line">I6. drawText()		<span class="comment">//绘制文字</span></span><br></pre></td></tr></table></figure>
+
+<p>不难想象, 有了以上接口, 我们就可以<strong>方便</strong>的绘制任意想要的图像.<br>这里强调的是<strong>方便</strong>, 有些接口并不是<strong>必须</strong>的. 比如说<code>drawImage()</code>,我们总可以调用有限次<code>drawLine()</code>和<code>drawShape()</code>来绘制任意给定的Image. 但是复杂程度可想而知.<br>一个绘图引擎设计的目的就是为了方便上层调用, 所以它会封装一些<strong>最常用</strong>和<strong>最基本</strong>的接口. 以上5个接口就满足这两个条件之一. 所谓<strong>最常用</strong>和<strong>最基本</strong>并没有一个明确的定义, 所以不同的绘图引擎可能会多一些常用接口,但都大同小异.</p>
+<br/>
+<br/>
+<br/>
+# iOS的绘图引擎
+下面我们就`Code-1`里提到的接口在iOS平台上做一个介绍.
+
+<h2 id="在哪里绘制"><a href="#在哪里绘制" class="headerlink" title="在哪里绘制?"></a>在哪里绘制?</h2><p>如果我们在XCode里新建一个<code>UIView</code>类, 我们会得到以下代码:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Code-2</span></span><br><span class="line"><span class="meta"># import <span class="meta-string">"GraphicsViewControllerView.h"</span></span></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">GraphicsViewControllerView</span></span></span><br><span class="line">- (<span class="keyword">id</span>)initWithFrame:(<span class="built_in">CGRect</span>)frame</span><br><span class="line">&#123; </span><br><span class="line">	<span class="keyword">self</span> = [<span class="keyword">super</span> initWithFrame:frame]; </span><br><span class="line">	<span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">		<span class="comment">// Initialization code &#125;</span></span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">self</span>; </span><br><span class="line">&#125;</span><br><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect</span><br><span class="line">&#123;</span><br><span class="line">	<span class="comment">// Drawing code </span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+
+<p>通常,<code>drawRect()</code>都会被注释起来. 因为, 如果你向<code>UIView</code>添加<code>subView</code>或者设置<code>UIView</code>的显示相关的属性(e.g. <code>backgroundCrolor</code>)的时候, <code>UIKit</code>会自动的把这些参数代表的含义绘制到<code>CALayer</code>上去. 也就是说, 一般情况我们并不需要自己来绘制, <code>UIKit</code>会自动帮我们完成绘制工作.<br>但是, 当不添加<code>subView</code>, 不设置<code>UIView</code>的显示相关的属性时, 我们就可以通过重载<code>drawRect()</code>来手动绘制图像了.   </p>
+<h2 id="Context"><a href="#Context" class="headerlink" title="Context"></a>Context</h2><blockquote>
+<p>A graphical context can be thought of as a canvas, offering an enormous number of properties such as pen color, pen thickness, etc. Given the context, you can start painting straight away inside the drawRect: method, and Cocoa Touch will make sure that the attributes and properties of the context are applied to your drawings. We will talk about this more later, but now, let’s move on to more interesting subjects.</p>
+</blockquote>
+<h2 id="drawText"><a href="#drawText" class="headerlink" title="drawText"></a>drawText</h2><p>我们新建一个<code>UIView</code>类<code>CustomUIView</code>,如下重载<code>drawRect()</code>方法.<br>新建<code>CustomUIView</code>的对象,不设置任何属性,添加到显示列表. </p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Code-3</span></span><br><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect&#123; </span><br><span class="line">	<span class="built_in">UIFont</span> *font = [<span class="built_in">UIFont</span> systemFontWithSize:<span class="number">40.</span>f]; </span><br><span class="line">	<span class="built_in">NSString</span> *myString = <span class="string">@"Some String"</span>;</span><br><span class="line">	[myString drawAtPoint:<span class="built_in">CGPointMake</span>(<span class="number">40</span>, <span class="number">180</span>) withFont:font];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行, 就可以看到我们没有添加任何<code>UITextField</code>却显示了文字~  </p>
+<h4 id="more"><a href="#more" class="headerlink" title="more:"></a>more:</h4><p>关于文字绘制的方法还有 <code>drawInRect:withFont:</code>等几个方法, 可参考官方文档.</p>
+<h2 id="setColor"><a href="#setColor" class="headerlink" title="setColor"></a>setColor</h2><p>我们把<code>Code-3</code>中的代码添加两行, 变成:  </p>
+<figure class="highlight objc"><figcaption><span>code-4</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Code-4</span></span><br><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect&#123; </span><br><span class="line">	<span class="built_in">UIColor</span>* color = [<span class="built_in">UIColor</span> blueColor];		<span class="comment">//create color</span></span><br><span class="line">	[color set];								<span class="comment">//set color</span></span><br><span class="line">	<span class="built_in">UIFont</span> *font = [<span class="built_in">UIFont</span> systemFontWithSize:<span class="number">40.</span>f]; </span><br><span class="line">	<span class="built_in">NSString</span> *myString = <span class="string">@"Some String"</span>;</span><br><span class="line">	[myString drawAtPoint:<span class="built_in">CGPointMake</span>(<span class="number">40</span>, <span class="number">180</span>) withFont:font];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>就可以看到,文字由黑色变成了蓝色.  </p>
+<h4 id="more-1"><a href="#more-1" class="headerlink" title="more:"></a>more:</h4><p><code>UIColor</code>还有两个方法<code>setStroke</code>和<code>setFill</code>分别设置线条颜色和填充颜色. 在后面的章节会用到.<code>set</code>方法影响所有前景色.</p>
+<h2 id="drawImage"><a href="#drawImage" class="headerlink" title="drawImage"></a>drawImage</h2><p>同样的, 如下重写<code>drawRect</code>方法:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Code-5</span></span><br><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect&#123; </span><br><span class="line">	<span class="comment">/* Assuming the image is in your app bundle and we can load it */</span></span><br><span class="line">	<span class="built_in">UIImage</span> *xcodeIcon = [<span class="built_in">UIImage</span> imageNamed:<span class="string">@"filename.png"</span>];</span><br><span class="line">	[xcodeIcon drawAtPoint:<span class="built_in">CGPointMake</span>(<span class="number">0.0</span>f, <span class="number">20.0</span>f)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们看到图像被绘制出来了.</p>
+<h4 id="more-2"><a href="#more-2" class="headerlink" title="more:"></a>more:</h4><p><code>UIImage</code>还有其他绘制方法:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">drawInRect:</span><br><span class="line">drawAsPatternInRect:</span><br><span class="line">drawAtPoint:blendMode:alpha:</span><br><span class="line">drawInRect:blendMode:alpha:</span><br></pre></td></tr></table></figure>
+
+<p>方法名已经很清楚的说明了方法的用途. 具体可参考官方文档</p>
+<h2 id="drawLine"><a href="#drawLine" class="headerlink" title="drawLine"></a>drawLine</h2><p>这两个是绘图引擎里最基本的, 所以放在一起讲述.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;Code-6: drawLine</span><br><span class="line">- (void)drawRect:(CGRect)rect&#123; </span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step1 设置绘图颜色 *&#x2F; </span><br><span class="line">	[[UIColor brownColor] set];</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step2 获取当期的画布: Graphic Context *&#x2F; </span><br><span class="line">	CGContextRef currentContext &#x3D; UIGraphicsGetCurrentContext();</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step3 设置线条宽度 *&#x2F; </span><br><span class="line">	CGContextSetLineWidth(currentContext,5.0f);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step4 把画笔移动到起始点 *&#x2F; </span><br><span class="line">	CGContextMoveToPoint(currentContext,50.0f, 10.0f);</span><br><span class="line">	&#x2F;* Step5 从起始点绘制线条到终点 *&#x2F; </span><br><span class="line">	CGContextAddLineToPoint(currentContext,100.0f, 200.0f);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step6 提交绘制 *&#x2F;</span><br><span class="line">	CGContextStrokePath(currentContext); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果想连续绘制多条线, 可以再<code>Code-6</code>中的<code>Step5</code>和<code>Step6</code>之间多次调用<code>CGContextAddLineToPoint()</code>.</p>
+<h4 id="more-3"><a href="#more-3" class="headerlink" title="more:"></a>more:</h4><p><code>CGContextSetLineJoin</code>可以改变线条交叉点的样式.</p>
+<h2 id="drawPath"><a href="#drawPath" class="headerlink" title="drawPath"></a>drawPath</h2><p>如果我们想快速绘制一条折线, 调用<code>drawLine</code>就显得有些臃肿. 所以有了<code>drawPath</code>, 它是<code>drawLine</code>的加强版.<br><code>drawPath</code>的一般步骤如下: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;Code-7: drawPath</span><br><span class="line">- (void)drawRect:(CGRect)rect&#123; </span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step1 获取当期的画布: Graphic Context *&#x2F; </span><br><span class="line">	CGContextRef currentContext &#x3D; UIGraphicsGetCurrentContext();</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step2 创建 path *&#x2F; </span><br><span class="line">	CGMutablePathRef path &#x3D; CGPathCreateMutable();</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step3 移动到起始点 *&#x2F;</span><br><span class="line">	CGPathMoveToPoint(path,NULL, screenBounds.size.width, screenBounds.origin.y);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step4 绘制一个椭圆 *&#x2F;</span><br><span class="line">	CGPathAddEllipseInRect(path, &amp;CGAffineTransformIdentity, CGRectMake(0, 320, 320, 160));</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step5 再添加一条直线 *&#x2F;</span><br><span class="line">	CGPathAddLineToPoint(path,NULL, screenBounds.origin.x, screenBounds.size.height);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step6 向画布添加path *&#x2F;</span><br><span class="line">	CGContextAddPath(currentcontext, path);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step7 设置绘制类型: kCGPathStroke(绘制边缘), kCGPathFill(填充path内区域), kCGPathFillStroke(包含前面两项)*&#x2F;</span><br><span class="line">	CGContextDrawPath(currentcontext, kCGPathFillStroke);</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step8 提交绘制 *&#x2F;</span><br><span class="line">	CGContextStrokePath(currentContext); </span><br><span class="line">	</span><br><span class="line">	&#x2F;* Step9 release path *&#x2F;</span><br><span class="line">	CGPathRelease(path);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="more-4"><a href="#more-4" class="headerlink" title="more:"></a>more:</h4><p>常见几何图形的绘制接口: <code>CGPathAddCurveToPoint</code>,<code>CGPathAddArcToPoint</code>,<code>CGPathAddRect</code>等等…</p>
+<h2 id="transform"><a href="#transform" class="headerlink" title="transform"></a>transform</h2><p>iOS中的<code>transform</code>使用<code>CGAffineTransform</code>表示的. 你可以用矩阵方式构造任意二维变换:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;*</span><br><span class="line">a: The value at position [1,1] in the matrix.</span><br><span class="line">b: The value at position [1,2] in the matrix.</span><br><span class="line">c: The value at position [2,1] in the matrix.</span><br><span class="line">d: The value at position [2,2] in the matrix.</span><br><span class="line">tx: The value at position [3,1] in the matrix.</span><br><span class="line">ty: The value at position [3,2] in the matrix.</span><br><span class="line">*&#x2F;</span><br><span class="line">CGAffineTransformMake(CGFloat a, CGFloat b, CGFloat c, CGFloat d, CGFloat tx, CGFloat ty)</span><br></pre></td></tr></table></figure>
+<p>矩阵表示为:<br><img src="https://developer.apple.com/library/ios/documentation/GraphicsImaging/Reference/CGAffineTransform/Art/equation01_2x.png" alt=""></p>
+<p>iOS也提供了常见变换的快速构建方式:   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CGAffineTransformIdentity			&#x2F;&#x2F;单位矩阵, 不做任何变换</span><br><span class="line">CGAffineTransformMakeRotation		&#x2F;&#x2F;旋转</span><br><span class="line">CGAffineTransformMakeScale			&#x2F;&#x2F;缩放</span><br><span class="line">CGAffineTransformMakeTranslation	&#x2F;&#x2F;平移</span><br></pre></td></tr></table></figure>
+
+<p>在<code>Code-7 Step4</code>中, 绘制<code>path</code>时用到了单位矩阵<code>CGAffineTransformIdentity</code>, 表示不做任何变换. 通常情况下, 都是在绘制阶段把<code>transform</code>作为参数传入. 上面提到的<code>CGPathAddCurveToPoint</code>,<code>CGPathAddArcToPoint</code>,<code>CGPathAddRect</code>函数都有一个<code>transform</code>参数.</p>
+<br/>
+<br/>
+<br/>
+# iOS绘图在项目中的应用
+通常, 我们只需要随心所欲的对`UIView`增加`subView`, `UIKit`会自动帮我们绘制. 但是下列情况下可能需要手动绘制:  
+
+<ol>
+<li>优化<code>UITableViewCell</code>的时候. 如果我们的<code>cell</code>很复杂, 有很多<code>subView</code>, 就会变得很卡顿. 就需要手动绘制了. 可参考博客: <a href="http://www.keakon.net/2011/08/03/%E4%BC%98%E5%8C%96UITableView%E6%80%A7%E8%83%BD" target="_blank" rel="noopener">优化UITableView性能</a>或者<a href="http://blog.csdn.net/cocoarannie/article/details/11183067" target="_blank" rel="noopener">IOS详解TableView——性能优化及手工绘制UITableViewCell</a></li>
+<li>暂未想到, 以后想到再说.</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ios/" rel="tag"># ios</a>
+              <a href="/tags/graphic/" rel="tag"># graphic</a>
+              <a href="/tags/anmation/" rel="tag"># anmation</a>
+              <a href="/tags/CGContextRef/" rel="tag"># CGContextRef</a>
+              <a href="/tags/drawRect/" rel="tag"># drawRect</a>
+              <a href="/tags/drawAtPoint/" rel="tag"># drawAtPoint</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2013/12/19/%E6%8A%80%E6%9C%AF/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E7%BB%93%E6%9E%84%E5%9E%8B%E6%A8%A1%E5%BC%8F-2013/" rel="prev" title="[设计模式]结构型模式-2013">
+      <i class="fa fa-chevron-left"></i> [设计模式]结构型模式-2013
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/03/23/%E6%8A%80%E6%9C%AF/%5Bcocos2dx%5D%E8%AE%A9UIButton%E6%94%AF%E6%8C%81disable%E7%8A%B6%E6%80%81/" rel="next" title="[cocos2dx]让UIButton支持disable状态">
+      [cocos2dx]让UIButton支持disable状态 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#什么是绘图引擎"><span class="nav-number">1.</span> <span class="nav-text">什么是绘图引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#在哪里绘制"><span class="nav-number">1.1.</span> <span class="nav-text">在哪里绘制?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Context"><span class="nav-number">1.2.</span> <span class="nav-text">Context</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#drawText"><span class="nav-number">1.3.</span> <span class="nav-text">drawText</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#more"><span class="nav-number">1.3.0.1.</span> <span class="nav-text">more:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#setColor"><span class="nav-number">1.4.</span> <span class="nav-text">setColor</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#more-1"><span class="nav-number">1.4.0.1.</span> <span class="nav-text">more:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#drawImage"><span class="nav-number">1.5.</span> <span class="nav-text">drawImage</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#more-2"><span class="nav-number">1.5.0.1.</span> <span class="nav-text">more:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#drawLine"><span class="nav-number">1.6.</span> <span class="nav-text">drawLine</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#more-3"><span class="nav-number">1.6.0.1.</span> <span class="nav-text">more:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#drawPath"><span class="nav-number">1.7.</span> <span class="nav-text">drawPath</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#more-4"><span class="nav-number">1.7.0.1.</span> <span class="nav-text">more:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#transform"><span class="nav-number">1.8.</span> <span class="nav-text">transform</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

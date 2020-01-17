@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="此文为Scrum极限编程在worktile工具中的应用规范。需要读者对Scrum极限编程有基本的认识，对worktile有过操作经历。因为worktile并不是专门为scrum设计的工具，所以在很多方面需要我们自己规范自己遵守。此篇文章，结合了worktile自身特点，整理出了一份操作规范。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Color Scrum项目管理规范">
+<meta property="og:url" content="http://blog.bookbook.in/2016/03/11/%E7%AE%A1%E7%90%86/Scrum%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E8%A7%84%E8%8C%83/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="此文为Scrum极限编程在worktile工具中的应用规范。需要读者对Scrum极限编程有基本的认识，对worktile有过操作经历。因为worktile并不是专门为scrum设计的工具，所以在很多方面需要我们自己规范自己遵守。此篇文章，结合了worktile自身特点，整理出了一份操作规范。">
+<meta property="og:image" content="http://blog.bookbook.in/2016/03/11/%E7%AE%A1%E7%90%86/Scrum%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E8%A7%84%E8%8C%83/Scrum-backlog.png">
+<meta property="og:image" content="http://blog.bookbook.in/2016/03/11/%E7%AE%A1%E7%90%86/Scrum%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E8%A7%84%E8%8C%83/Scrum-task.png">
+<meta property="article:published_time" content="2016-03-11T03:44:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="scrum">
+<meta property="article:tag" content="color">
+<meta property="article:tag" content="worktile">
+<meta property="article:tag" content="项目管理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://blog.bookbook.in/2016/03/11/%E7%AE%A1%E7%90%86/Scrum%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E8%A7%84%E8%8C%83/Scrum-backlog.png">
+
+<link rel="canonical" href="http://blog.bookbook.in/2016/03/11/%E7%AE%A1%E7%90%86/Scrum%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E8%A7%84%E8%8C%83/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Color Scrum项目管理规范 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2016/03/11/%E7%AE%A1%E7%90%86/Scrum%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E8%A7%84%E8%8C%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Color Scrum项目管理规范
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-03-11 11:44:00" itemprop="dateCreated datePublished" datetime="2016-03-11T11:44:00+08:00">2016-03-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%A1%E7%90%86/" itemprop="url" rel="index">
+                    <span itemprop="name">管理</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">此文为Scrum极限编程在worktile工具中的应用规范。需要读者对Scrum极限编程有基本的认识，对worktile有过操作经历。因为worktile并不是专门为scrum设计的工具，所以在很多方面需要我们自己规范自己遵守。此篇文章，结合了worktile自身特点，整理出了一份操作规范。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要：此文为Scrum极限编程在worktile工具中的应用规范。需要读者对Scrum极限编程有基本的认识，对worktile有过操作经历。因为worktile并不是专门为scrum设计的工具，所以在很多方面需要我们自己规范自己遵守。此篇文章，结合了worktile自身特点，整理出了一份操作规范。</p>
+<h2 id="任务看板"><a href="#任务看板" class="headerlink" title="任务看板"></a>任务看板</h2><p>任务看板分为两种：</p>
+<ol>
+<li>产品列表。显示名称为<code>产品列表</code>。此列表是一个愿望列表，表示希望在将来的产品中看到的功能。任何人都可以向此列表中添加项目。</li>
+<li>冲刺列表。显示名称为<code>S5:冲刺目标名称</code>。此列表代表一个冲刺周期中，应该完成的任务。已完成的冲刺周期将会逐渐归档。为了方便回溯查找，我们将保留3个已完成的冲刺列表。</li>
+</ol>
+<p><img src="Scrum-backlog.png" alt=""></p>
+<h2 id="任务字段"><a href="#任务字段" class="headerlink" title="任务字段"></a>任务字段</h2><ol>
+<li><strong>名称</strong>：<code>T(/B){id}:H{hour}:{任务名称}</code>。举例：<code>T1:H4:注册和登录页面</code>，<code>B1:H2:上个冲刺周期有个Bug</code>。<ol start="2">
+<li>任务类型：<code>T</code>表示普通任务（Task）；<code>B</code>表示Bug，表示已结束的冲刺周期中出现的问题。</li>
+<li><code>{id}</code>表示任务的唯一ID,为纯数字，从1开始递增。大家在添加任务的时候，请查看下当前列表的最大任务ID号。</li>
+<li><code>{hour}</code>表示完成该任务的计划时间，单位为小时。</li>
+<li><code>{任务名称}</code>是该任务的简短描述，让同事看到名称，能想起来是哪件事情。</li>
+</ol>
+</li>
+<li><strong>标签</strong>。分为<code>低，中，高，紧急</code>四个等级，优先级依次底层。完成时从高往低开始做。</li>
+<li><strong>关注的人</strong>。为所有与此相关的人。</li>
+<li><strong>分配任务给</strong>。为任务当前的执行者。一般一个任务会涉及多个参与者，所有的参与者在“关注的人”中指定。当一个人做完之后会交接到下一个人。而当前任务执行者，指的是任务的当前处理者。当前任务的处理者完成自己的那部分任务后，或指给项目负责人处理，或指给下一个处理人。</li>
+<li><strong>截止时间</strong>。冲刺周期开始时，为每个任务指定截止时间为本周期结束日。在每日站立会议中，讨论接下来一到两天的任务，再次设定这些任务的截止日期。</li>
+<li><strong>任务描述</strong>。详细的任务描述，执行人可通过任务描述详细的了解该怎么执行。如果任务创建者和执行者已经进行过口头沟通，需在任务描述中标注<code>已沟通</code>，并把要点写上，方便以后回忆。</li>
+<li><strong>检查项</strong>。表示此任务的补充任务。在冲刺周期还未结束时，用来对执行者已经完成的任务进行补充。比如，在开发过程中，执行者已经完成该任务，但任务发起者发现有些细节跟最初设计的不同，则需要重新打开此任务，在“检查项”中写明那些地方不对，需要继续修改。<ol start="8">
+<li><strong>检查项名称</strong>。每一个检查项需要以格式<code>B{ID}:{任务名称}（见评论）</code>来命名。如果需要补充说明，请添加在评论区中，并在检查项名称的末尾加上<code>（见评论）</code>。</li>
+<li><strong>检查项补充说明</strong>。如果检查项描述比较复杂，可在评论区中添加对此检查项的描述。评论区的说明内容也需要以<code>B{ID}</code>开始，与检查项的ID对应，以便其它同事快速查找。</li>
+</ol>
+</li>
+</ol>
+<p><img src="Scrum-task.png" alt=""></p>
+<h2 id="任务操作"><a href="#任务操作" class="headerlink" title="任务操作"></a>任务操作</h2><p>上述已经规范过的操作规范，不再赘述。补充以下操作规范：</p>
+<ol>
+<li>任务管理者，需要每日整理任务看板，使得：<ol start="2">
+<li>已完成的任务拖动到冲刺列表的末尾。</li>
+<li>所有的任务按照优先级从高到低排列。</li>
+</ol>
+</li>
+<li>不要轻易归档已完成任务。已完成任务会在每次周期结束时统一归档。为方便查找，还会保留最近三个周期的任务暂不归档。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/scrum/" rel="tag"># scrum</a>
+              <a href="/tags/color/" rel="tag"># color</a>
+              <a href="/tags/worktile/" rel="tag"># worktile</a>
+              <a href="/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" rel="tag"># 项目管理</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/03/10/%E6%8A%80%E6%9C%AF/%5BOO%5D%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8E%9F%E5%88%99/" rel="prev" title="[OO]面向对象的基本原则">
+      <i class="fa fa-chevron-left"></i> [OO]面向对象的基本原则
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/03/15/%E8%AF%BB%E4%B9%A6/%E3%80%8A%E6%B7%98%E5%AE%9D%E6%8A%80%E6%9C%AF%E8%BF%99%E5%8D%81%E5%B9%B4%E3%80%8B%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="next" title="《淘宝技术这十年》读书笔记">
+      《淘宝技术这十年》读书笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#任务看板"><span class="nav-number">1.</span> <span class="nav-text">任务看板</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#任务字段"><span class="nav-number">2.</span> <span class="nav-text">任务字段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#任务操作"><span class="nav-number">3.</span> <span class="nav-text">任务操作</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

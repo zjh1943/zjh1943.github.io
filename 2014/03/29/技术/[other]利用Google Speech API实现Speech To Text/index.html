@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="简介：很久很久以前, 网上流传着一个免费的,识别率暴高的,稳定的Speech To Text API, 那就是Google Speech API. 但是最近再使用的时候,总是返回500 Error. 后来通过查看源码知道需要增加一个参数:key&#x3D;.... 可能是为了防止滥用吧. 并且, 最近Chrome另外发布了一个长连接实时的识别接口, 这对开发者来说真是巨大的福音啊. 在这里主要对这两个接口的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用Google Speech API实现Speech To Text">
+<meta property="og:url" content="http://blog.bookbook.in/2014/03/29/%E6%8A%80%E6%9C%AF/[other]%E5%88%A9%E7%94%A8Google%20Speech%20API%E5%AE%9E%E7%8E%B0Speech%20To%20Text/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="简介：很久很久以前, 网上流传着一个免费的,识别率暴高的,稳定的Speech To Text API, 那就是Google Speech API. 但是最近再使用的时候,总是返回500 Error. 后来通过查看源码知道需要增加一个参数:key&#x3D;.... 可能是为了防止滥用吧. 并且, 最近Chrome另外发布了一个长连接实时的识别接口, 这对开发者来说真是巨大的福音啊. 在这里主要对这两个接口的">
+<meta property="og:image" content="http://blog.bookbook.in/2014/03/29/%E6%8A%80%E6%9C%AF/[other]%E5%88%A9%E7%94%A8Google%20Speech%20API%E5%AE%9E%E7%8E%B0Speech%20To%20Text/SpeechResult.jpg">
+<meta property="article:published_time" content="2014-03-29T02:07:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="google">
+<meta property="article:tag" content="SpeechToText">
+<meta property="article:tag" content="API">
+<meta property="article:tag" content="STT">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="SR">
+<meta property="article:tag" content="speech">
+<meta property="article:tag" content="recognition">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://blog.bookbook.in/2014/03/29/%E6%8A%80%E6%9C%AF/[other]%E5%88%A9%E7%94%A8Google%20Speech%20API%E5%AE%9E%E7%8E%B0Speech%20To%20Text/SpeechResult.jpg">
+
+<link rel="canonical" href="http://blog.bookbook.in/2014/03/29/%E6%8A%80%E6%9C%AF/[other]%E5%88%A9%E7%94%A8Google%20Speech%20API%E5%AE%9E%E7%8E%B0Speech%20To%20Text/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>利用Google Speech API实现Speech To Text | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2014/03/29/%E6%8A%80%E6%9C%AF/[other]%E5%88%A9%E7%94%A8Google%20Speech%20API%E5%AE%9E%E7%8E%B0Speech%20To%20Text/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          利用Google Speech API实现Speech To Text
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2014-03-29 10:07:00" itemprop="dateCreated datePublished" datetime="2014-03-29T10:07:00+08:00">2014-03-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>简介：很久很久以前, 网上流传着一个<strong>免费的,识别率暴高的,稳定的</strong>Speech To Text API, 那就是Google Speech API. 但是最近再使用的时候,总是返回500 Error. 后来通过查看源码知道需要增加一个参数:<code>key=...</code>. 可能是为了防止滥用吧. 并且, 最近Chrome另外发布了一个<strong>长连接实时</strong>的识别接口, 这对开发者来说真是巨大的福音啊. 在这里主要对这两个接口的用法进行介绍.</p>
+<h2 id="关键字"><a href="#关键字" class="headerlink" title="关键字"></a>关键字</h2><p><code>SpeechToText,API,google,STT,ASR,SR,speech,recognition</code></p>
+<h2 id="申请Chromium-API-keys"><a href="#申请Chromium-API-keys" class="headerlink" title="申请Chromium API keys"></a>申请Chromium API keys</h2><p>本文使用的Google Speech API是为google自家的浏览器Chrome服务的. 可以通过这个Demo体验一下实际使用的效果: <a href="https://www.google.com/intl/en/chrome/demos/speech.html" target="_blank" rel="noopener">Google Speech To Text Demo</a>.<br>Chrome来源于开源项目Chromium. 为了方便开发者调试使用, google <strong><em>开放</em></strong>了这个STT(Speech to Text)接口. 但是, 因为这个借口只供调试使用, 所以在流量和次数上都有限制.并且, 不提供购买.  </p>
+<p>好了, 背景介绍完毕, 我们来第一步: <strong><em>申请Chromium开发者权限</em></strong>.<br>具体步骤请参考<a href="http://www.chromium.org/developers/how-tos/api-keys" target="_blank" rel="noopener">how to get chromium API keys</a>). </p>
+<blockquote>
+<p><strong><em>Acquiring Keys</em></strong></p>
+</blockquote>
+<blockquote>
+<ol>
+<li>Make sure you are a member of <a href="mailto:chromium-dev@chromium.org">chromium-dev@chromium.org</a> (you can just subscribe to chromium-dev and choose not to receive mail).<br>For convenience, the APIs below are only visible to people subscribed to that group.</li>
+<li>Make sure you are logged in with the Google account associated with the email address that you used to subscribe to chromium-dev.</li>
+<li>Go to <a href="https://cloud.google.com/console" target="_blank" rel="noopener">https://cloud.google.com/console</a>(请使用旧版console)</li>
+<li>Click the red Create project… button.</li>
+<li>(Optional) You may add other members of your organization or team on the Team tab.</li>
+<li>In the ‘APIs &amp; auth’ &gt; APIs tab, click the On/Off button to turn each of the following APIs to the On position, and read and agree to the Terms of Service that is shown:<br><br>(This list might be out of date; try searching for APIs starting with “Chrome” or having “for Chrome” in the name.)      * Chrome Remote Desktop API<ul>
+<li>Chrome Spelling API</li>
+<li>Chrome Suggest API</li>
+<li>Chrome Sync API</li>
+<li>Chrome Translate Element</li>
+<li>Google Maps Geolocation API (requires enabling billing but is free to use; you can skip this one, in which case geolocation features of Chrome will not work)</li>
+<li>Safe Browsing API</li>
+<li><strong><em>Speech API</em></strong></li>
+<li>Time Zone API</li>
+<li>Google Cloud Messaging for Chrome</li>
+<li>Google Now For Chrome API<br>If any of these APIs are not shown, recheck step 1.</li>
+</ul>
+</li>
+<li>Go to the Credentials tab under the APIs &amp; auth tab.</li>
+<li>Click the red Create New Client ID button in the OAuth section to create an OAuth 2.0 client ID.<ul>
+<li>You want “Installed Application” for the Application type section</li>
+<li>You want “Other” for the Installed application type section</li>
+</ul>
+</li>
+<li>A new box should now appear titled “Client ID for installed applications”. In the next sections, we will refer to the values of the “Client ID” and “Client secret” fields in this box later (below).</li>
+<li>Click the red Create New Key button in the Public API Access section and create a new Browser key.<br>You want to leave the box on the “Create a browser key and configure allowed referers” empty.</li>
+<li>A new box should appear titled “Key for browser applications”. The next sections will refer to the value of the “API key” field too.</li>
+</ol>
+</blockquote>
+<p>好了, 到这里, 我们已经获得了应用key, 在下文我们用<code>{key}</code>表示这个key.</p>
+<h2 id="One-Shot-Recognition"><a href="#One-Shot-Recognition" class="headerlink" title="One Shot Recognition"></a>One Shot Recognition</h2><p>我们用<code>curl</code>来向服务器发送请求:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST \</span><br><span class="line">--data-binary @speech.flac \</span><br><span class="line">--user-agent &#39;Mozilla&#x2F;5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit&#x2F;535.7 (KHTML, like Gecko) Chrome&#x2F;16.0.912.77 Safari&#x2F;535.7&#39; \</span><br><span class="line">--header &#39;Content-Type: audio&#x2F;x-flac; rate&#x3D;8000;&#39; \</span><br><span class="line">&#39;https:&#x2F;&#x2F;www.google.com&#x2F;speech-api&#x2F;v1&#x2F;recognize?client&#x3D;chromium&amp;lang&#x3D;zh-CN&amp;maxresults&#x3D;5&amp;pfilter&#x3D;0&amp;key&#x3D;AIzaSyC6Tkf4*****Q0CdISn-qnHhwLaS3cg2a0&#39;</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th align="left">参数</th>
+<th align="left">解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">-X POST</td>
+<td align="left">表示发送HTTP请求</td>
+</tr>
+<tr>
+<td align="left">–data-binary @speech.flac</td>
+<td align="left">发送音频文件<code>speech.flac</code></td>
+</tr>
+<tr>
+<td align="left">–user-agent ‘…’</td>
+<td align="left">http的参数,设置浏览器的<code>user-agent</code>信息</td>
+</tr>
+<tr>
+<td align="left">–header</td>
+<td align="left">http的参数. 指定了传送内容的类型(<code>audio/flac</code>)和音频频率(<code>8000Hz</code>). 注意, 只支持特定的几种频率(<code>8000Hz,4000Hz</code>还有几个记不清了),上传的flac文件频率要和参数一致.</td>
+</tr>
+<tr>
+<td align="left"><a href="https://www.google.com/.../&amp;key=" target="_blank" rel="noopener">https://www.google.com/.../&amp;key=</a><br>AIzaSyC6Tkf*****Q0CdISn-qnHhwLaS3cg2a0</td>
+<td align="left">http请求地址,其中最后一部分的key,应该替换为您申请的<code>{key}</code>.</td>
+</tr>
+</tbody></table>
+<p>等待一分钟左右, 如果你运气好的话, 能看到如下结果:<br><img src="SpeechResult.jpg" alt="Result Image" title="ResultImage"></p>
+<p>结果格式如下, 应该很清晰了吧:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;status&quot;: 0,</span><br><span class="line">    &quot;id&quot;: &quot;b3447b5d98c5653e0067f35b32c0a8ca-1&quot;,</span><br><span class="line">    &quot;hypotheses&quot;: </span><br><span class="line">    [</span><br><span class="line">    	&#123;</span><br><span class="line">        	&quot;utterance&quot;: &quot;i like pickles&quot;,</span><br><span class="line">        	&quot;confidence&quot;: 0.9012539</span><br><span class="line">    	&#125;,</span><br><span class="line">    	&#123;</span><br><span class="line">        	&quot;utterance&quot;: &quot;i like pickle&quot;</span><br><span class="line">    	&#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>如果您录音的格式不对的话, 可以用开源软件<code>sox</code>方便的转换格式和码率. 举个栗子:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sox .&#x2F;speech.mp3 -b 8 speech.flac trim 0 15</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th align="left">参数</th>
+<th align="left">解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">./speech.mp3</td>
+<td align="left">输入文件</td>
+</tr>
+<tr>
+<td align="left">-b 8</td>
+<td align="left">输出文件频率为 8kHz</td>
+</tr>
+<tr>
+<td align="left">speech.flac</td>
+<td align="left">输出文件名</td>
+</tr>
+<tr>
+<td align="left">trim 0 15</td>
+<td align="left">截取输入文件的0~15秒的部分, 输出出来</td>
+</tr>
+</tbody></table>
+<h2 id="Stream-Recognition"><a href="#Stream-Recognition" class="headerlink" title="Stream Recognition"></a>Stream Recognition</h2><p>后来, Google 提供了更先进的live的双向的识别接口. 即同时打开两个HTTP连接, 一个负责实时发送(<code>POST</code>)音频流, 一个负责接受(<code>GET</code>).<br>这里有一个<code>PHP</code>版本的Demo. 可以参考实现您自己的<code>Stream Recognition</code>:<br><a href="http://mikepultz.com/2013/07/google-speech-api-full-duplex-php-version/" target="_blank" rel="noopener">Google Speech API – Full Duplex PHP Version</a></p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用:"></a>引用:</h2><ol>
+<li><p>Google Speech API – Full Duplex PHP Version<br><a href="http://mikepultz.com/2013/07/google-speech-api-full-duplex-php-version/" target="_blank" rel="noopener">http://mikepultz.com/2013/07/google-speech-api-full-duplex-php-version/</a></p>
+</li>
+<li><p>Accessing Google Speech API / Chrome 11<br><a href="http://mikepultz.com/2011/03/accessing-google-speech-api-chrome-11/" target="_blank" rel="noopener">http://mikepultz.com/2011/03/accessing-google-speech-api-chrome-11/</a></p>
+</li>
+<li><p>Google Speech To Text API ( 9 months ago )<br><a href="https://gist.github.com/alotaiba/1730160" target="_blank" rel="noopener">https://gist.github.com/alotaiba/1730160</a></p>
+</li>
+<li><p>避开Google Voice Search利用Google Speech API实现Android语音识别<br><a href="http://my.eoe.cn/sisuer/archive/5960.html" target="_blank" rel="noopener">http://my.eoe.cn/sisuer/archive/5960.html</a></p>
+</li>
+<li><p>How to Use Google Speech API( with sox )<br><a href="http://www.x2q.net/blog/2013/09/16/how-to-use-google-speech-api/" target="_blank" rel="noopener">http://www.x2q.net/blog/2013/09/16/how-to-use-google-speech-api/</a></p>
+</li>
+<li><p>Google Chomium Open Project<br><a href="http://src.chromium.org/viewvc/chrome/trunk/src/content/browser/speech/" target="_blank" rel="noopener">http://src.chromium.org/viewvc/chrome/trunk/src/content/browser/speech/</a><br><a href="http://src.chromium.org/viewvc/chrome/trunk/src/content/browser/speech/google_one_shot_remote_engine.cc" target="_blank" rel="noopener">http://src.chromium.org/viewvc/chrome/trunk/src/content/browser/speech/google_one_shot_remote_engine.cc</a></p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/google/" rel="tag"># google</a>
+              <a href="/tags/SpeechToText/" rel="tag"># SpeechToText</a>
+              <a href="/tags/API/" rel="tag"># API</a>
+              <a href="/tags/STT/" rel="tag"># STT</a>
+              <a href="/tags/ASR/" rel="tag"># ASR</a>
+              <a href="/tags/SR/" rel="tag"># SR</a>
+              <a href="/tags/speech/" rel="tag"># speech</a>
+              <a href="/tags/recognition/" rel="tag"># recognition</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/03/29/%E6%8A%80%E6%9C%AF/%5Bcocos2dx%5D%E8%AE%A9CCScrollView%E6%94%AF%E6%8C%81%E5%88%86%E9%A1%B5/" rel="prev" title="[cocos2dx]让CCScrollView支持分页">
+      <i class="fa fa-chevron-left"></i> [cocos2dx]让CCScrollView支持分页
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/04/18/%E7%AE%A1%E7%90%86/IT%E6%8A%80%E6%9C%AF%E5%9B%A2%E9%98%9F%E7%AE%A1%E7%90%86-%E6%80%BB%E7%BB%93/" rel="next" title="如何管理IT技术团队">
+      如何管理IT技术团队 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#关键字"><span class="nav-number">1.</span> <span class="nav-text">关键字</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#申请Chromium-API-keys"><span class="nav-number">2.</span> <span class="nav-text">申请Chromium API keys</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#One-Shot-Recognition"><span class="nav-number">3.</span> <span class="nav-text">One Shot Recognition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Stream-Recognition"><span class="nav-number">4.</span> <span class="nav-text">Stream Recognition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#引用"><span class="nav-number">5.</span> <span class="nav-text">引用:</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

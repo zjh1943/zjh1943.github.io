@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要：创业不息、折腾不止，今年跟朋友又折腾了一个新项目：Color公寓。线上产品主要是一个在线网站，所以不得不把技术栈切换到网站开发模式。通过最近一段时间alpha版本的开发，对于PHP开发有一个全面而粗浅的了解。又因为面试需要，在这里做一下总结。  写在前面当我们谈到PHP开发，我们其实是在谈论网站，数据库，缓存，session，负载均衡等等等等一些列复杂技术的集合。所以，PHP的技能站也比一般">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[PHP]PHP程序员技能站">
+<meta property="og:url" content="http://blog.bookbook.in/2015/05/14/%E6%8A%80%E6%9C%AF/[PHP]%E7%A8%8B%E5%BA%8F%E5%91%98%E6%8A%80%E8%83%BD%E6%A0%88/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要：创业不息、折腾不止，今年跟朋友又折腾了一个新项目：Color公寓。线上产品主要是一个在线网站，所以不得不把技术栈切换到网站开发模式。通过最近一段时间alpha版本的开发，对于PHP开发有一个全面而粗浅的了解。又因为面试需要，在这里做一下总结。  写在前面当我们谈到PHP开发，我们其实是在谈论网站，数据库，缓存，session，负载均衡等等等等一些列复杂技术的集合。所以，PHP的技能站也比一般">
+<meta property="article:published_time" content="2015-05-14T10:46:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="php">
+<meta property="article:tag" content="mysql">
+<meta property="article:tag" content="cache">
+<meta property="article:tag" content="css">
+<meta property="article:tag" content="xdebug">
+<meta property="article:tag" content="composer">
+<meta property="article:tag" content="pear">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bookbook.in/2015/05/14/%E6%8A%80%E6%9C%AF/[PHP]%E7%A8%8B%E5%BA%8F%E5%91%98%E6%8A%80%E8%83%BD%E6%A0%88/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[PHP]PHP程序员技能站 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2015/05/14/%E6%8A%80%E6%9C%AF/[PHP]%E7%A8%8B%E5%BA%8F%E5%91%98%E6%8A%80%E8%83%BD%E6%A0%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [PHP]PHP程序员技能站
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2015-05-14 18:46:00" itemprop="dateCreated datePublished" datetime="2015-05-14T18:46:00+08:00">2015-05-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要：创业不息、折腾不止，今年跟朋友又折腾了一个新项目：<a href="color520.com">Color公寓</a>。线上产品主要是一个在线网站，所以不得不把技术栈切换到<strong>网站开发</strong>模式。通过最近一段时间alpha版本的开发，对于PHP开发有一个全面而粗浅的了解。又因为面试需要，在这里做一下总结。</p>
+<p><a name="写在前面"></a></p>
+<h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>当我们谈到<strong>PHP开发</strong>，我们其实是在谈论<code>网站</code>，<code>数据库</code>，<code>缓存</code>，<code>session</code>，<code>负载均衡</code>等等等等一些列复杂技术的集合。所以，PHP的技能站也比一般得要长很多。</p>
+<p><a name="php基础"></a></p>
+<h2 id="PHP基础"><a href="#PHP基础" class="headerlink" title="PHP基础"></a>PHP基础</h2><p>在这里，你需要了解的是：</p>
+<ol>
+<li>在各个平台安装php并用php内置的web服务器成功的见到“Hello PHP”界面。</li>
+<li>PHP函数式编程语法，面向对象语法，命名空间。</li>
+<li>PHP标准库的熟悉。</li>
+<li>调试工具：起码要知道xdebug的使用方法。</li>
+<li>依赖包管理工具的安装、使用、原理，最常用的：composer,pear。</li>
+<li>语法性能及原理：<ol start="8">
+<li>万能的array。用法、实现原理、使用注意事项。（关键字：Hash Table）。</li>
+<li>字符串链接的效率。</li>
+<li>弱类型的实现原理。（关键字：zval）</li>
+</ol>
+</li>
+<li>Http协议，Get/Post请求的不同。 </li>
+</ol>
+<p><a name="php原理"></a></p>
+<h2 id="PHP原理"><a href="#PHP原理" class="headerlink" title="PHP原理"></a>PHP原理</h2><p><a name="设计理念及特点"></a></p>
+<h3 id="设计理念及特点"><a href="#设计理念及特点" class="headerlink" title="设计理念及特点"></a>设计理念及特点</h3><ol>
+<li>多线程模型，请求独立。</li>
+<li>弱类型语言。</li>
+<li>引擎（Zend）+组件（ext）的组合模式。</li>
+</ol>
+<p><a name="php四层体系"></a></p>
+<h3 id="PHP四层体系"><a href="#PHP四层体系" class="headerlink" title="PHP四层体系"></a>PHP四层体系</h3><ol>
+<li><strong>Zend引擎</strong>：Zend整体用纯C实现，是PHP的内核部分，它将PHP代码翻译（词法、语法解析等一系列编译过程）为可执行opcode的处理并实现相应的处理方法、实现了基本的数据结构（如hashtable、oo）、内存分配及管理、提供了相应的api方法供外部调用，是一切的核心，所有的外围功能均围绕Zend实现。</li>
+<li><strong>Extensions</strong>：围绕着Zend引擎，extensions通过组件式的方式提供各种基础服务，我们常见的各种内置函数（如array系列）、标准库等都是通过extension来实现，用户也可以根据需要实现自己的extension以达到功能扩展、性能优化等目的（如贴吧正在使用的PHP中间层、富文本解析就是extension的典型应用）。</li>
+<li><strong>Sapi</strong>：Sapi全称是Server Application Programming Interface，也就是服务端应用编程接口，Sapi通过一系列钩子函数，使得PHP可以和外围交互数据，这是PHP非常优雅和成功的一个设计，通过sapi成功的将PHP本身和上层应用解耦隔离，PHP可以不再考虑如何针对不同应用进行兼容，而应用本身也可以针对自己的特点实现不同的处理方式。</li>
+<li><strong>上层应用</strong>：这就是我们平时编写的PHP程序，通过不同的sapi方式得到各种各样的应用模式，如通过webserver实现web应用、在命令行下以脚本方式运行等等。</li>
+</ol>
+<p><a name="mvc-框架"></a></p>
+<h2 id="MVC-框架"><a href="#MVC-框架" class="headerlink" title="MVC 框架"></a>MVC 框架</h2><ol>
+<li>MVC理论。</li>
+<li>PHP模板。</li>
+<li>常见的开源MVC框架，至少对其中一种有深入研究。 </li>
+</ol>
+<p><a name="oop、设计模式、重构"></a></p>
+<h2 id="OOP、设计模式、重构"><a href="#OOP、设计模式、重构" class="headerlink" title="OOP、设计模式、重构"></a>OOP、设计模式、重构</h2><ol>
+<li>面向对象编程的基础：继承、封装、多态。</li>
+<li>常见的设计模式及应用场景。<a href="http://zh.wikipedia.org/wiki/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F_(%E8%AE%A1%E7%AE%97%E6%9C%BA)" target="_blank" rel="noopener">参考</a></li>
+<li>对代码的坏味道有敏锐的嗅觉，掌握基本的重构方法。</li>
+</ol>
+<p><a name="web前端技能"></a></p>
+<h2 id="Web前端技能"><a href="#Web前端技能" class="headerlink" title="Web前端技能"></a>Web前端技能</h2><ol>
+<li>HTML/CSS/JavaScript 基础。</li>
+<li>缓存，Cookie，Session原理和使用。</li>
+</ol>
+<p><a name="mysql数据库技能"></a></p>
+<h2 id="MySQL数据库技能"><a href="#MySQL数据库技能" class="headerlink" title="MySQL数据库技能"></a>MySQL数据库技能</h2><ol>
+<li>MySQL安装和配置</li>
+<li>MySQL增删改查基本语法</li>
+<li>数据库设计原则和常见的技巧</li>
+<li>MySQL性能诊断和优化</li>
+<li>分布式数据库设计、数据库备份和恢复 </li>
+</ol>
+<p><a name="服务器架设"></a></p>
+<h2 id="服务器架设"><a href="#服务器架设" class="headerlink" title="服务器架设"></a>服务器架设</h2><ol>
+<li>Linux常用命令。</li>
+<li>dns,cdn,缓存,带宽等资源的合理利用。</li>
+<li>nginx,apache安装和配置。</li>
+<li>图床的架设。（关键字：EvaCloudImage）</li>
+</ol>
+<p><a name="引用"></a></p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><ol>
+<li><a href="http://laravel-china.github.io/php-the-right-way/" target="_blank" rel="noopener">PHP The Right Way</a></li>
+<li><a href="http://nonfu.me/p/232.html" target="_blank" rel="noopener">PHP底层的运行机制与原理</a></li>
+<li><a href="http://rmurphey.com/blog/2012/04/12/a-baseline-for-front-end-developers/" target="_blank" rel="noopener">A Baseline for Front-End Developers</a></li>
+<li><a href="http://zh.wikipedia.org/wiki/%E4%BB%A3%E7%A0%81%E9%87%8D%E6%9E%84" target="_blank" rel="noopener">代码重构</a></li>
+<li><a href="http://linux5588.blog.51cto.com/65280/1351007" target="_blank" rel="noopener"> 一次完整的HTTP事务是怎样一个过程？</a></li>
+</ol>
+<p><a name="广告"></a></p>
+<h2 id="广告"><a href="#广告" class="headerlink" title="广告"></a>广告</h2><p>好吧，下面是广告时间：</p>
+<p>【Color国际青年公寓】是麦芒资产旗下的主打项目，一个面向租房市场的O2O项目。  简单来说：就是将现有出租房统一包装之后再分租给客户，统一规范管理；然后利用租客的天然流量优势，打造更加丰富的O2O生活闭环。面向群体是中等以上收入的年轻人。<br>我们的创始团队来自于阿里巴巴、美国雅虎、完美世界、魅族等一线企业，线下也有10多年地产中介经验的人才加盟。核心创始人已多次创业。<br>丰富的创业经验，千万级的天使融资，为您的未来提供了更有力的保证！<br>只要您认同我们的文化，有舍我其谁的自信，就果断向我们砸简历吧：<a href="mailto:&#x68;&#x72;&#x40;&#99;&#111;&#x6c;&#111;&#x72;&#53;&#50;&#x30;&#46;&#99;&#111;&#109;">&#x68;&#x72;&#x40;&#99;&#111;&#x6c;&#111;&#x72;&#53;&#50;&#x30;&#46;&#99;&#111;&#109;</a>，待遇绝对超过BAT。<br>详情见：<a href="http://www.cnblogs.com/jhzhu/p/4377942.html" target="_blank" rel="noopener">Color国际青年公寓</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/php/" rel="tag"># php</a>
+              <a href="/tags/mysql/" rel="tag"># mysql</a>
+              <a href="/tags/cache/" rel="tag"># cache</a>
+              <a href="/tags/css/" rel="tag"># css</a>
+              <a href="/tags/xdebug/" rel="tag"># xdebug</a>
+              <a href="/tags/composer/" rel="tag"># composer</a>
+              <a href="/tags/pear/" rel="tag"># pear</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/11/30/%E8%AF%BB%E4%B9%A6/%E8%BF%98%E5%8E%9F%E4%B8%80%E4%B8%AA%E7%9C%9F%E5%AE%9E%E7%9A%84%E6%94%BF%E5%95%86%E5%9C%88/" rel="prev" title="《掌舵》读书笔记">
+      <i class="fa fa-chevron-left"></i> 《掌舵》读书笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2015/08/19/%E6%8A%80%E6%9C%AF/%5BPHP%5DYii2%E6%A1%86%E6%9E%B6%E7%9A%84%E5%9D%91/" rel="next" title="[PHP]Yii2框架的几个隐蔽的坑">
+      [PHP]Yii2框架的几个隐蔽的坑 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PHP基础"><span class="nav-number">2.</span> <span class="nav-text">PHP基础</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PHP原理"><span class="nav-number">3.</span> <span class="nav-text">PHP原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#设计理念及特点"><span class="nav-number">3.1.</span> <span class="nav-text">设计理念及特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP四层体系"><span class="nav-number">3.2.</span> <span class="nav-text">PHP四层体系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MVC-框架"><span class="nav-number">4.</span> <span class="nav-text">MVC 框架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OOP、设计模式、重构"><span class="nav-number">5.</span> <span class="nav-text">OOP、设计模式、重构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Web前端技能"><span class="nav-number">6.</span> <span class="nav-text">Web前端技能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL数据库技能"><span class="nav-number">7.</span> <span class="nav-text">MySQL数据库技能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#服务器架设"><span class="nav-number">8.</span> <span class="nav-text">服务器架设</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#引用"><span class="nav-number">9.</span> <span class="nav-text">引用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#广告"><span class="nav-number">10.</span> <span class="nav-text">广告</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

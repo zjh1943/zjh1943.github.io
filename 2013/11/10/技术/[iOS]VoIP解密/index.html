@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://blog.bookbook.in').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="摘要：一般来说, IOS很少给App后台运行的权限. 仅有的方式就是 VoIP. IOS少有的为VoIP应用提供了后台socket连接,定期唤醒并且随开机启动的权限.而这些就是IOS上实现VoIP App的关键. 苹果官方文档对于的描述就短短的一页(点击这里),很多细节没有提及. 这篇微博通过具体实现和查阅资料,补充了这些细节.并且列举出了在实现过程中可能遇到的问题, 作为参考.  官方文档描述如">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[iOS]VoIP解密">
+<meta property="og:url" content="http://blog.bookbook.in/2013/11/10/%E6%8A%80%E6%9C%AF/[iOS]VoIP%E8%A7%A3%E5%AF%86/index.html">
+<meta property="og:site_name" content="Book Book, Come in~">
+<meta property="og:description" content="摘要：一般来说, IOS很少给App后台运行的权限. 仅有的方式就是 VoIP. IOS少有的为VoIP应用提供了后台socket连接,定期唤醒并且随开机启动的权限.而这些就是IOS上实现VoIP App的关键. 苹果官方文档对于的描述就短短的一页(点击这里),很多细节没有提及. 这篇微博通过具体实现和查阅资料,补充了这些细节.并且列举出了在实现过程中可能遇到的问题, 作为参考.  官方文档描述如">
+<meta property="article:published_time" content="2013-11-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-01-13T05:00:17.000Z">
+<meta property="article:author" content="知明所以">
+<meta property="article:tag" content="ios">
+<meta property="article:tag" content="voip">
+<meta property="article:tag" content="socket">
+<meta property="article:tag" content="background">
+<meta property="article:tag" content="iphone">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bookbook.in/2013/11/10/%E6%8A%80%E6%9C%AF/[iOS]VoIP%E8%A7%A3%E5%AF%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>[iOS]VoIP解密 | Book Book, Come in~</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Book Book, Come in~</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">知明所以的博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://blog.bookbook.in/2013/11/10/%E6%8A%80%E6%9C%AF/[iOS]VoIP%E8%A7%A3%E5%AF%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="知明所以">
+      <meta itemprop="description" content="关系、健康、自由，是我的追求。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Book Book, Come in~">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [iOS]VoIP解密
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2013-11-10 00:00:00" itemprop="dateCreated datePublished" datetime="2013-11-10T00:00:00+08:00">2013-11-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-01-13 13:00:17" itemprop="dateModified" datetime="2019-01-13T13:00:17+08:00">2019-01-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>摘要：一般来说, IOS很少给App后台运行的权限. 仅有的方式就是 VoIP. IOS少有的为VoIP应用提供了<strong>后台socket连接,定期唤醒并且随开机启动</strong>的权限.而这些就是IOS上实现VoIP App的关键. 苹果官方文档对于的描述就短短的一页(<a href="https://developer.apple.com/library/ios/documentation/iphone/conceptual/iphoneosprogrammingguide/AdvancedAppTricks/AdvancedAppTricks.html#//apple_ref/doc/uid/TP40007072-CH7-SW12" target="_blank" rel="noopener">点击这里</a>),很多细节没有提及. 这篇微博通过具体实现和查阅资料,补充了这些细节.并且列举出了在实现过程中可能遇到的问题, 作为参考.</p>
+<hr>
+<h1 id="官方文档描述如是"><a href="#官方文档描述如是" class="headerlink" title="官方文档描述如是:"></a>官方文档描述如是:</h1><p><strong>PS:</strong>此节纯用来占座.如果你你E文不好或者想直接切入正题, 请看下一标题.  </p>
+<blockquote>
+<p>There are several requirements for implementing a VoIP app:</p>
+</blockquote>
+<blockquote>
+<ol>
+<li>Add the UIBackgroundModes key to your app’s Info.plist file. Set the value of this key to an array that includes the voip string.  </li>
+</ol>
+</blockquote>
+<ol>
+<li>Configure one of the app’s sockets for VoIP usage.<br>S</li>
+<li>Before moving to the background, call the setKeepAliveTimeout:handler: method to install a handler to be executed periodically. Your app can use this handler to maintain its service connection.  </li>
+<li>Configure your audio session to handle transitions to and from active use.  </li>
+<li>To ensure a better user experience on iPhone, use the Core Telephony framework to adjust your behavior in relation to cell-based phone calls; see Core Telephony Framework Reference.  </li>
+<li>To ensure good performance for your VoIP app, use the System Configuration framework to detect network changes and allow your app to sleep as much as possible.</li>
+</ol>
+<h1 id="我的翻译"><a href="#我的翻译" class="headerlink" title="我的翻译:"></a>我的翻译:</h1><p>关于IOS为VoIP应用提供的特殊权限和实现方法,我的描述如下. 我尽可能的涉及到voip实现的各种细节, 这样你能对这个运作机制有一个更好的<strong>理解</strong>,我觉得这远比单单贴几行代码有意义. 因为一个开发者在实际实现过程中遇到的千难险阻很少会体现在最终代码上, 就如你永远不知道台上的角儿在台下的挫折.  </p>
+<ol>
+<li><strong>IOS允许App的一个Socket在App切换到后台后仍然保持连接</strong>. 这样,当有通话请求的时候,App能及时处理. 这个<code>socket</code>需要在应用第一次启动的时候创建, 并标记为”此<code>socket</code>用于VoIP服务”. 这样当App切换到后台的时候,IOS会<strong>接管</strong>这个标记为”用于VoIP服务”的<code>socket</code>. 这个<code>socket</code>的响应函数(比如,一个<code>delegate</code>,或者是个<code>block</code>)会正常的响应, 就像App还在前台一样.  </li>
+<li><strong>10s魔咒</strong>. 当<code>socket</code>有任何数据从服务端传来, 你在app里为<code>socket</code>写的响应函数都会做处理.但是, 你只有最多10s的时间来干你想干的事情. 也就意味着你在响应函数里新建一个大于10s的<code>timer</code>是没有意义的. 并且IOS并不保证给你足够10s的时间,视系统情况而定. </li>
+<li>在<code>socket</code>的响应函数里, 你能通过<code>NSLocalNotification</code>来通知用户”电话来了”. 除此之外, 你没法做其他任何视觉上的动作来提醒用户, 因为你的app还处于某个不知道的次元, 甚至连<code>window</code>都还没创建. </li>
+<li>你永远也没有办法知道或者决定<code>NSLocalNotification</code>的样式是<code>banner</code>还是<code>alert</code>. 你也许钟爱后者, 但是决定权在用户手里.</li>
+<li><strong>允许在后台定期执行一段代码</strong>. 你可以设定一个大于等于10分钟的时间<code>t</code>, 和一个定期执行的<code>handler</code>, IOS系统会在每次经过<code>t</code>时间的时候调用一次这个<code>handler</code>. 但是IOS不保证这个<code>handler</code>会准时运行, 只保证在时间<code>t</code>范围内的某个点会执行一次.   </li>
+<li>我们通常用楼上的<code>handler</code>处理socket的断线重连操作. 因为网络不稳定, 或者用户开启飞行模式等原因, 我们用于voip服务的<code>socket</code>会断开连接. 在这个<code>handler</code>里,如果发现连接断开,我们只需要跟条目1一样的创建<code>socket</code>,设置一样的<code>socket</code>响应函数,一切又会恢复正常.</li>
+<li>不建议这个<code>handler</code>做太多事情, 因为它也有<strong>10s魔咒</strong>.(据不完全统计,苹果所有的后台处理都有这个10s限制. 不保证绝对正确哈, 仅供参考)</li>
+<li><strong>自启服务</strong>. 当IOS重新启动, 或者你的app因为其他原因退出时, IOS会马上启动你注册为voip的app, 你可以很迅速的恢复<code>socket</code>连接. 但是, 从底部多任务栏中手动关闭应用除外.更”code”的说明是:当程序退出的<code>exitcode != 0</code>,IOS会重启你的app.经试验发现,从底部多任务栏关闭的时候,程序的<code>exitcode == 0</code>.</li>
+<li>如果你亲爱的用户是一个典型的”app终结者”,那么你还剩最后一条路来通知来电提醒:<code>NSRemoteNotification</code>.  你也许会被<code>NSRemoteNotification</code>的可靠性和实时性折腾的抓狂, 但是, 谁让你选了IOS? 你享受了封闭带来的传世体验, 也得承受封闭的限制.  </li>
+<li>当条目8描述的情况发生之后,app的<code>application:didFinishLaunchingWithOptions:</code>会被调用. 但是,请时刻提醒自己我们的app仍然处于后台. 我们以前总在这里创建<code>window</code>创建<code>rootController</code>, 但现在不必了. 现在我们需要的就是把可爱的<code>socket</code>连上, 像在条目1里一样,让一切回归正常(我不去写歌词真浪费了^_^).</li>
+<li>在<code>application:didFinishLaunchingWithOptions:</code>里你能通过<code>[application applicationState] == UIApplicationStateBackground</code>来判断是正常启动应用还是系统自动启动, 然后决定该创建<code>window</code>还是创建voip的<code>socket</code>.</li>
+<li>如果你看完上面一头雾水. 请回炉重造, 传送门:<a href="https://developer.apple.com/library/mac/documentation/cocoa/conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html" target="_blank" rel="noopener">Programming with Objective-C</a>, <a href="https://developer.apple.com/library/ios/navigation/" target="_blank" rel="noopener">iOS Develop Library</a>.</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ios/" rel="tag"># ios</a>
+              <a href="/tags/voip/" rel="tag"># voip</a>
+              <a href="/tags/socket/" rel="tag"># socket</a>
+              <a href="/tags/background/" rel="tag"># background</a>
+              <a href="/tags/iphone/" rel="tag"># iphone</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2013/11/03/%E6%8A%80%E6%9C%AF/%5BiOS%5DUIView%E4%BD%8D%E7%BD%AE%E5%B1%9E%E6%80%A7%E5%A4%A7%E6%8F%AD%E7%A7%98/" rel="prev" title="[iOS]UIView.frame的骗局">
+      <i class="fa fa-chevron-left"></i> [iOS]UIView.frame的骗局
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2013/12/12/%E6%8A%80%E6%9C%AF/%5BiOS%5DOrientation%20%E6%83%B3%E6%80%8E%E4%B9%88%E8%BD%AC%E5%B0%B1%E6%80%8E%E4%B9%88%E8%BD%AC/" rel="next" title="[iOS]Orientation 想怎么转就怎么转">
+      [iOS]Orientation 想怎么转就怎么转 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#官方文档描述如是"><span class="nav-number">1.</span> <span class="nav-text">官方文档描述如是:</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#我的翻译"><span class="nav-number">2.</span> <span class="nav-text">我的翻译:</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">知明所以</p>
+  <div class="site-description" itemprop="description">关系、健康、自由，是我的追求。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">75</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">236</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zjh1943" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zjh1943" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jhzhuustc@gmail.com" title="E-Mail → mailto:jhzhuustc@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">知明所以</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
