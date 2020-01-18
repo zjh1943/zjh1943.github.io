@@ -1,7 +1,8 @@
 node_modules
 public/**
-**/.DS_Store
 .deploy_git/**
 .vscode/**
 .MWebMetaData
 db.json
+.DS_Store
+**/.DS_Store

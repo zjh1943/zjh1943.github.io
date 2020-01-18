@@ -12,7 +12,7 @@ categories:
 
 1. **Props & onChange 的原罪** 。「props & onChange 接口规范」它不是一个典型的「程序接口规范」。
     1. 当你拿到一个可视组件的 ref，却没有类似 `setProps()` 这样的方法来改变其 `props`，你只能在 render() 方法中，通过 jsx 语言来设置其 `props`。这意味着父元素必须保存并维护这个 props 对应的值，而更多时候，父容器只是想**一次性**的设置一个值，然后就走，让以后的事情交给子元素自己去维护。当然，你也可以通过 ref 来获取子元素的应用，然后调用其成员方法来达到**一次性**改变属性的目的，但又会带来其他问题，请看下一条。
-    2. 在大多数客户端框架里，有一个视图类 `ComponentA`，`compA = new ComponentA()`， `compoA` 即是对这个可视组件的表示。而，在 React 世界里，`compA.render()` 返回的结果（结果的结构参见下图），才是这个可视组件的表示。这种不同带来的后果是，我们很难对已经渲染过的节点进行后续更改。当然 React 提供了 `React.cloneElement(element,props)` 接口来改变，但是这个接口怎么看都不像一种**正派**的接口，而像是。。。`hack`。因为这种改变，其他人时候很难看懂的。换句话说，我们不是通过一个明确定义的接口，而是“随性的”，“肆无忌惮”的修改了内存。![函数返回结果](/idx/react_render_result_object.png)
+    2. 在大多数客户端框架里，有一个视图类 `ComponentA`，`compA = new ComponentA()`， `compoA` 即是对这个可视组件的表示。而，在 React 世界里，`compA.render()` 返回的结果（结果的结构参见下图），才是这个可视组件的表示。这种不同带来的后果是，我们很难对已经渲染过的节点进行后续更改。当然 React 提供了 `React.cloneElement(element,props)` 接口来改变，但是这个接口怎么看都不像一种**正派**的接口，而像是。。。`hack`。因为这种改变，其他人时候很难看懂的。换句话说，我们不是通过一个明确定义的接口，而是“随性的”，“肆无忌惮”的修改了内存。![函数返回结果](/images/idx/react_render_result_object.png)
     3. React 用 `props & PropType` 的方式重新定义了一种接口规范，定义了一个组件的输入和输出。输入 `props` 一般是 `string`, `boolean`, `number`, `object`；输出参数一般是 `function`。`PropType` 定义了每个 `props` 的取值范围、 是否必填等信息。这整个一套机制是跟面向对象语言里的 `interface` 的功能是高度重合的，也就是说，React 重新发明了轮子。并且这个轮子有自己很大的局限性：他不是能自表达的。什么意思呢？在典型的面向对象语言里（以 java 为例）, 假设有一下代码：
     ```java
     inteface IRunable{
